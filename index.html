@@ -949,6 +949,80 @@
     color: #e74c3c;
     border: 1px solid rgba(231,76,60,.3);
   }
+
+  /* ── MODAL NOME CLIENTE ── */
+  .nome-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.85);
+    z-index: 600;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .nome-overlay.open { display: flex; }
+  .nome-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    max-width: 360px;
+    width: 100%;
+    animation: slideUp .25s ease;
+  }
+  .nome-box .icon { font-size: 36px; text-align: center; margin-bottom: 12px; }
+  .nome-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .nome-box p {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .nome-box input {
+    width: 100%;
+    padding: 13px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 16px;
+  }
+  .nome-box input:focus { border-color: var(--accent); }
+  .nome-box-actions { display: flex; gap: 10px; }
+  .btn-nome-cancelar {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .btn-nome-cancelar:hover { border-color: var(--text); color: var(--text); }
+  .btn-nome-confirmar {
+    flex: 2;
+    padding: 12px;
+    background: #25d366;
+    border: none;
+    border-radius: 50px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-nome-confirmar:hover { background: #1da853; }
   .btn-entrar {
     width: 100%;
     padding: 14px;
@@ -1146,6 +1220,20 @@
     <div class="edit-actions">
       <button class="btn-cancel-edit" onclick="closeEditModal()">Cancelar</button>
       <button class="btn-salvar-edit" onclick="salvarEdicao()">💾 Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOME CLIENTE -->
+<div class="nome-overlay" id="nomeOverlay">
+  <div class="nome-box">
+    <div class="icon">👋</div>
+    <h3>Antes de continuar...</h3>
+    <p>Para identificar seu pedido no WhatsApp, nos diga seu nome:</p>
+    <input type="text" id="nomeClienteInput" placeholder="Seu nome" onkeydown="if(event.key==='Enter')confirmarNomeCliente()">
+    <div class="nome-box-actions">
+      <button class="btn-nome-cancelar" onclick="closeNomeModal()">Cancelar</button>
+      <button class="btn-nome-confirmar" onclick="confirmarNomeCliente()">📲 Continuar</button>
     </div>
   </div>
 </div>
@@ -1917,26 +2005,63 @@ document.getElementById('itemModal').onclick = e => { if(e.target===e.currentTar
 // ─────────────────────────────────────────────────────────
 // WHATSAPP
 // ─────────────────────────────────────────────────────────
+let pedidoPendente = null; // { tipo: 'item'|'footer', nome, preco }
+
 function checkAbertoFooter(e) {
+  e.preventDefault();
   if(config.horarioAtivo && !estaAberto()) {
-    e.preventDefault();
     alert('🔴 ' + (config.msgFechado || DEFAULT_CONFIG.msgFechado) + `\n\nHorário: ${config.horaAbre} às ${config.horaFecha}`);
     return false;
   }
-  return true;
+  pedidoPendente = { tipo: 'footer' };
+  openNomeModal();
+  return false;
 }
 
 function pedirWpp(nome, preco) {
-  const wpp = (config.wpp||'').replace(/\D/g,'');
-
   if(config.horarioAtivo && !estaAberto()) {
     alert('🔴 ' + (config.msgFechado || DEFAULT_CONFIG.msgFechado) + `\n\nHorário: ${config.horaAbre} às ${config.horaFecha}`);
     return;
   }
-
-  const msg = encodeURIComponent(`Olá! Quero pedir: *${nome}* — R$ ${preco.toFixed(2).replace('.',',')}`);
-  window.open(`https://wa.me/${wpp}?text=${msg}`, '_blank');
+  pedidoPendente = { tipo: 'item', nome, preco };
+  openNomeModal();
 }
+
+function openNomeModal() {
+  const salvo = localStorage.getItem('cdp_nome_cliente') || '';
+  document.getElementById('nomeClienteInput').value = salvo;
+  document.getElementById('nomeOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('nomeClienteInput').focus(), 100);
+}
+
+function closeNomeModal() {
+  document.getElementById('nomeOverlay').classList.remove('open');
+  pedidoPendente = null;
+}
+
+function confirmarNomeCliente() {
+  const nomeCliente = document.getElementById('nomeClienteInput').value.trim();
+  if(!nomeCliente) { alert('Por favor, digite seu nome para continuar.'); return; }
+
+  localStorage.setItem('cdp_nome_cliente', nomeCliente);
+
+  const wpp = (config.wpp||'').replace(/\D/g,'');
+  let texto;
+
+  if(pedidoPendente?.tipo === 'item') {
+    texto = `Olá! Meu nome é *${nomeCliente}*.\nQuero pedir: *${pedidoPendente.nome}* — R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}`;
+  } else {
+    texto = `Olá! Meu nome é *${nomeCliente}*. Gostaria de fazer um pedido.`;
+  }
+
+  const msg = encodeURIComponent(texto);
+  window.open(`https://wa.me/${wpp}?text=${msg}`, '_blank');
+
+  document.getElementById('nomeOverlay').classList.remove('open');
+  pedidoPendente = null;
+}
+
+document.getElementById('nomeOverlay').onclick = e => { if(e.target===e.currentTarget) closeNomeModal(); };
 
 // ─────────────────────────────────────────────────────────
 // SEARCH
