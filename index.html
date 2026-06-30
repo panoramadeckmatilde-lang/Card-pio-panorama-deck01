@@ -1097,6 +1097,7 @@
         <button class="btn-add-item" onclick="salvarCreds()" style="flex:2;margin-top:8px;">🔗 Conectar à nuvem</button>
         <button class="btn-add-item" onclick="exportarDados()" style="flex:1;margin-top:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);">📤 Exportar dados</button>
       </div>
+      <button class="btn-add-item" onclick="forcarSync()" style="margin-top:10px;background:var(--accent2);">🔄 Forçar sincronização agora</button>
       <div class="form-group" style="margin-top:14px;">
         <label>📥 Importar dados de um backup (.json)</label>
         <input type="file" id="importFile" accept=".json" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);width:100%;" onchange="importarDados(this.files[0])">
@@ -1269,8 +1270,19 @@ let searchQ  = '';
 // ─────────────────────────────────────────────────────────
 // JSONBIN — NUVEM
 // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// CREDENCIAIS FIXAS DA NUVEM (JSONBin)
+// Preenchidas para que o cardápio funcione igual em qualquer dispositivo.
+// ─────────────────────────────────────────────────────────
+const CLOUD_API_KEY = '$2a$10$O78a9K4B1qWJzoyKp42YEeOI.LzRKXL3EgLWqWkngNvhEoMQjiWOS';
+const CLOUD_BIN_ID  = '6a431b71f5f4af5e2944d421';
+
 // Pega credenciais salvas localmente (só no dispositivo do dono)
 function getCreds() {
+  // Prioriza as credenciais fixas no código (funciona em qualquer dispositivo)
+  if(CLOUD_API_KEY && CLOUD_BIN_ID) {
+    return { apiKey: CLOUD_API_KEY, binId: CLOUD_BIN_ID };
+  }
   try {
     return JSON.parse(localStorage.getItem('cdp_creds') || 'null');
   } catch(e) { return null; }
@@ -1291,17 +1303,22 @@ async function cloudLoad() {
   if(!creds?.binId || !creds?.apiKey) return false;
   try {
     setStatus('⏳ Carregando da nuvem...', 'info');
-    const r = await fetch(`https://api.jsonbin.io/v3/b/${creds.binId}/latest`, {
-      headers: { 'X-Master-Key': creds.apiKey }
+    // cache-busting: evita 304/cache do navegador trazendo dados antigos
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${creds.binId}/latest?t=${Date.now()}`, {
+      headers: { 'X-Master-Key': creds.apiKey },
+      cache: 'no-store'
     });
     if(!r.ok) throw new Error('Erro ' + r.status);
     const data = (await r.json()).record;
-    if(data.items)  items  = data.items;
+    if(Array.isArray(data.items) && data.items.length) {
+      items = data.items;
+    }
     if(data.config) config = {...DEFAULT_CONFIG, ...data.config};
     nextId = Math.max(...items.map(i=>i.id), 0) + 1;
     setStatus('✅ Sincronizado', 'ok');
     return true;
   } catch(e) {
+    console.error('Erro ao carregar nuvem:', e);
     setStatus('⚠️ Erro ao carregar nuvem', 'err');
     return false;
   }
@@ -1310,10 +1327,9 @@ async function cloudLoad() {
 async function cloudSave() {
   const creds = getCreds();
   if(!creds?.binId || !creds?.apiKey) {
-    // sem nuvem — salva local
     localStorage.setItem('cdp_items',  JSON.stringify(items));
     localStorage.setItem('cdp_config', JSON.stringify(config));
-    return;
+    return true;
   }
   try {
     setStatus('⏳ Salvando...', 'info');
@@ -1325,13 +1341,18 @@ async function cloudSave() {
       },
       body: JSON.stringify({ items, config })
     });
-    if(!r.ok) throw new Error('Erro ' + r.status);
+    if(!r.ok) {
+      const txt = await r.text().catch(()=> '');
+      throw new Error('HTTP ' + r.status + ' ' + txt);
+    }
     setStatus('✅ Salvo na nuvem', 'ok');
+    return true;
   } catch(e) {
-    setStatus('⚠️ Erro ao salvar', 'err');
-    // salva local como backup
+    console.error('Erro ao salvar na nuvem:', e);
+    setStatus('⚠️ Erro ao salvar na nuvem', 'err');
     localStorage.setItem('cdp_items',  JSON.stringify(items));
     localStorage.setItem('cdp_config', JSON.stringify(config));
+    return false;
   }
 }
 
@@ -1354,27 +1375,48 @@ function localLoad() {
 // EXPORTAR dados do navegador atual (para migrar pro JSONBin)
 // ─────────────────────────────────────────────────────────
 function exportarDados() {
+  if(!items.length) {
+    if(!confirm('⚠️ Atenção: o cardápio está com 0 itens carregados agora. Exportar mesmo assim vai gerar um backup vazio. Continuar?')) return;
+  }
   const dados = { items, config };
   const blob = new Blob([JSON.stringify(dados, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'cardapio-backup.json';
   a.click();
+  alert(`📤 Backup exportado com ${items.length} item(ns).`);
 }
 
 function importarDados(file) {
+  if(!file) return;
   const reader = new FileReader();
   reader.onload = async e => {
     try {
       const dados = JSON.parse(e.target.result);
+      const qtdNovos = dados.items ? dados.items.length : 0;
+
+      if(!confirm(`Esse backup tem ${qtdNovos} item(ns).\n\nIsso vai SUBSTITUIR todos os dados atuais na nuvem (que tem ${items.length} item(ns) agora).\n\nConfirma a importação?`)) {
+        document.getElementById('importFile').value = '';
+        return;
+      }
+
       if(dados.items)  items  = dados.items;
       if(dados.config) config = {...DEFAULT_CONFIG, ...dados.config};
       nextId = Math.max(...items.map(i=>i.id), 0) + 1;
-      await cloudSave();
+
+      const ok = await cloudSave();
       applyConfig(); renderCats(); renderCards(); renderAdminList();
-      alert('✅ Dados importados e salvos na nuvem!');
+
+      if(ok) {
+        alert(`✅ ${qtdNovos} item(ns) importado(s) e salvos na nuvem com sucesso!`);
+      } else {
+        alert('⚠️ Os itens foram carregados na tela, mas houve um erro ao salvar na nuvem. Verifique sua conexão e tente "Salvar configurações" de novo, ou veja o status no topo do painel.');
+      }
     } catch(err) {
-      alert('Erro ao importar: arquivo inválido.');
+      console.error(err);
+      alert('❌ Erro ao importar: o arquivo não é um backup válido.');
+    } finally {
+      document.getElementById('importFile').value = '';
     }
   };
   reader.readAsText(file);
@@ -1656,10 +1698,25 @@ function salvarCreds() {
   setStatus('✅ Nuvem configurada', 'ok');
 }
 
-function openAdminPanel() {
+async function forcarSync() {
+  setStatus('⏳ Buscando dados mais recentes...', 'info');
+  const ok = await cloudLoad();
+  if(ok) {
+    applyConfig(); renderCats(); renderCards(); renderAdminList();
+    alert(`✅ Sincronizado! ${items.length} item(ns) carregado(s) da nuvem.`);
+  } else {
+    alert('⚠️ Não foi possível buscar da nuvem agora. Verifique sua conexão com a internet e as credenciais.');
+  }
+}
+
+async function openAdminPanel() {
   const creds = getCreds();
   if(creds?.apiKey) document.getElementById('cfg-apikey').value = creds.apiKey;
   if(creds?.binId)  document.getElementById('cfg-binid').value  = creds.binId;
+
+  // busca versão mais recente da nuvem antes de mostrar o painel
+  await cloudLoad();
+
   document.getElementById('cfg-nome').value       = config.nome;
   document.getElementById('cfg-slogan').value     = config.slogan;
   document.getElementById('cfg-wpp').value        = config.wpp||'';
