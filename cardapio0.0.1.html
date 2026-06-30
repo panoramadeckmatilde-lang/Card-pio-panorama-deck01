@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardápio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0d0a;
+    --surface: #1a1612;
+    --card: #221e18;
+    --accent: #e8a020;
+    --accent2: #c0392b;
+    --text: #f0ead8;
+    --muted: #8a7f6e;
+    --border: #2e2820;
+    --gold-glow: rgba(232,160,32,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    text-align: center;
+    padding: 64px 24px 48px;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232,160,32,0.12) 0%, transparent 70%);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .hero-video-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .hero-video-bg iframe {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 100vw; height: 56.25vw;
+    min-height: 100%; min-width: 177.78vh;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    border: none;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(15,13,10,.5) 0%, rgba(15,13,10,.3) 50%, rgba(15,13,10,.7) 100%);
+    z-index: 1;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+  }
+  .hero-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 8vw, 72px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+  .hero h1 span {
+    color: var(--accent);
+  }
+  .hero-sub {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .hero-divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 24px auto 0;
+  }
+
+  /* ── SEARCH ── */
+  .search-wrap {
+    max-width: 480px;
+    margin: 32px auto 0;
+    padding: 0 16px;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 14px 20px 14px 48px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon {
+    position: absolute;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  /* ── CATEGORIES ── */
+  .cats {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 28px 16px 0;
+    scrollbar-width: none;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .cats::-webkit-scrollbar { display: none; }
+  .cat-btn {
+    flex-shrink: 0;
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .cat-btn:hover { border-color: var(--accent); color: var(--text); }
+  .cat-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0f0d0a;
+    font-weight: 600;
+  }
+  .cat-emoji { font-size: 15px; }
+
+  /* ── GRID ── */
+  .section-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    padding: 36px 16px 16px;
+    max-width: 900px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label span { color: var(--accent); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 20px 16px 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.5), 0 0 0 1px var(--accent);
+  }
+  .card.unavailable { opacity: 0.4; pointer-events: none; }
+
+  .card-media {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-media img,
+  .card-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0; left: 0;
+  }
+  .card-media .emoji-placeholder {
+    font-size: 56px;
+    z-index: 1;
+  }
+  .card-media iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: none;
+    pointer-events: none;
+  }
+  /* badge play no card com YouTube */
+  .card-yt-badge {
+    position: absolute;
+    bottom: 8px; left: 8px;
+    background: rgba(0,0,0,.7);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    z-index: 3;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .badge-destaque {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--accent);
+    color: #0f0d0a;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    z-index: 2;
+  }
+
+  .card-body { padding: 16px; }
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .card-price .cifrao {
+    font-size: 13px;
+    font-weight: 400;
+    vertical-align: super;
+    margin-right: 1px;
+    color: var(--muted);
+  }
+
+  .btn-pedir {
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-pedir:hover { background: #a93226; }
+  .btn-pedir:active { transform: scale(.96); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    max-width: 420px;
+    width: 100%;
+    overflow: hidden;
+    animation: slideUp .25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-media {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 72px;
+    position: relative;
+    overflow: hidden;
+  }
+  .modal-media img,
+  .modal-media video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0; left: 0;
+  }
+  .modal-body { padding: 24px; }
+  .modal-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .modal-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .modal-price {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-fechar {
+    flex: 1;
+    padding: 13px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .btn-fechar:hover { border-color: var(--text); color: var(--text); }
+  .btn-wpp {
+    flex: 2;
+    padding: 13px;
+    border-radius: 50px;
+    border: none;
+    background: #25d366;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background .2s;
+  }
+  .btn-wpp:hover { background: #1da853; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 48px 16px;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  footer .wpp-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    background: #25d366;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background .2s;
+  }
+  footer .wpp-link:hover { background: #1da853; }
+
+  /* ── ADMIN TOGGLE ── */
+  .admin-toggle {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    transition: all .2s;
+  }
+  .admin-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── ADMIN PANEL ── */
+  .admin-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.92);
+    z-index: 300;
+    overflow-y: auto;
+  }
+  .admin-overlay.open { display: block; }
+
+  .admin-panel {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+  }
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+  .admin-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--accent);
+  }
+  .btn-close-admin {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all .2s;
+  }
+  .btn-close-admin:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .admin-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .admin-section h3 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .form-row.full { grid-template-columns: 1fr; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: .5px;
+  }
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+    width: 100%;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus { border-color: var(--accent); }
+  .form-group textarea { min-height: 80px; resize: vertical; }
+
+  .btn-add-item {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #0f0d0a;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background .2s;
+  }
+  .btn-add-item:hover { background: #d4901c; }
+
+  /* item list */
+  .item-list { display: flex; flex-direction: column; gap: 10px; }
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .item-row-info { flex: 1; }
+  .item-row-name { font-weight: 600; font-size: 14px; }
+  .item-row-cat { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .item-row-price { font-weight: 700; color: var(--accent); font-size: 15px; min-width: 70px; text-align: right; }
+  .item-row-actions { display: flex; gap: 6px; }
+  .btn-toggle-avail,
+  .btn-del {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .btn-toggle-avail:hover { border-color: var(--accent); }
+  .btn-del:hover { border-color: var(--accent2); background: rgba(192,57,43,.1); }
+
+  /* configs */
+  .config-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* ── EDIT MODAL ── */
+  .edit-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.92);
+    z-index: 500;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .edit-overlay.open { display: flex; }
+  .edit-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 900px;
+    padding: 28px 24px;
+    animation: slideUp .25s ease;
+    margin: auto;
+  }
+  .edit-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .edit-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 640px) {
+    .edit-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Preview */
+  .edit-preview-col {
+    position: sticky;
+    top: 16px;
+  }
+  .edit-preview-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .preview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .preview-media {
+    width: 100%;
+    height: 180px;
+    position: relative;
+    overflow: hidden;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+  }
+  .preview-media img {
+    position: absolute;
+    max-width: none;
+    max-height: none;
+    pointer-events: none;
+    user-select: none;
+    transform-origin: center center;
+  }
+  .preview-body { padding: 14px; }
+  .preview-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--text);
+  }
+  .preview-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+  .preview-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .preview-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .preview-btn {
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Controles de imagem */
+  .img-controls {
+    margin-top: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .img-controls-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .img-ctrl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .img-ctrl-row:last-child { margin-bottom: 0; }
+  .img-ctrl-row label {
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 60px;
+  }
+  .img-ctrl-row input[type=range] {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 4px;
+    cursor: pointer;
+  }
+  .img-ctrl-val {
+    font-size: 12px;
+    color: var(--text);
+    min-width: 36px;
+    text-align: right;
+  }
+  .btn-reset-img {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all .2s;
+  }
+  .btn-reset-img:hover { border-color: var(--accent); color: var(--accent); }
+
+  .edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .btn-salvar-edit {
+    flex: 2;
+    padding: 13px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50px;
+    color: #0f0d0a;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn-salvar-edit:hover { background: #d4901c; }
+  .btn-cancel-edit {
+    flex: 1;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .btn-cancel-edit:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-edit {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .btn-edit:hover { border-color: var(--accent); background: rgba(232,160,32,.1); }
+
+  /* senha overlay */
+  .senha-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.96);
+    z-index: 400;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .senha-overlay.open { display: flex; }
+  .senha-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 32px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+  }
+  .senha-icon { font-size: 40px; margin-bottom: 16px; }
+  .senha-box h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .senha-box p { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .senha-box input {
+    width: 100%;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 18px;
+    text-align: center;
+    letter-spacing: 4px;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 16px;
+  }
+  .senha-box input:focus { border-color: var(--accent); }
+  .btn-entrar {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #0f0d0a;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .senha-erro { font-size: 13px; color: var(--accent2); margin-top: 10px; display: none; }
+
+  /* no results */
+  .no-results {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--muted);
+    display: none;
+  }
+  .no-results .icon { font-size: 48px; margin-bottom: 12px; }
+
+  @media (max-width: 480px) {
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div id="heroBg"></div>
+  <div class="hero-overlay" id="heroOverlay" style="display:none"></div>
+  <div class="hero-content">
+    <div class="hero-badge">✦ cardápio digital ✦</div>
+    <h1 id="nome-estabelecimento">Meu <span>Lugar</span></h1>
+    <p class="hero-sub" id="slogan-estabelecimento">Lanches, bebidas & boas pedidas</p>
+    <div class="hero-divider"></div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar no cardápio...">
+    </div>
+  </div>
+</header>
+
+<!-- CATEGORIAS -->
+<nav class="cats" id="catNav"></nav>
+
+<!-- CONTEÚDO -->
+<main id="mainContent"></main>
+
+<div class="no-results" id="noResults">
+  <div class="icon">🍽️</div>
+  <p>Nenhum item encontrado</p>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p id="footer-info">Clique em qualquer item para ver mais detalhes e fazer seu pedido</p>
+  <a id="wpp-footer" href="#" class="wpp-link" target="_blank">
+    📲 Falar no WhatsApp
+  </a>
+</footer>
+
+<!-- MODAL ITEM -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal">
+    <div class="modal-media" id="modalMedia">
+      <span class="emoji-placeholder" id="modalEmoji"></span>
+    </div>
+    <div class="modal-body">
+      <div class="modal-name" id="modalName"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div class="modal-price" id="modalPrice"></div>
+      <div class="modal-actions">
+        <button class="btn-fechar" onclick="closeModal()">Fechar</button>
+        <button class="btn-wpp" id="modalWpp">📲 Pedir pelo WhatsApp</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="edit-overlay" id="editOverlay">
+  <div class="edit-box">
+    <h3>✏️ Editar item</h3>
+    <input type="hidden" id="edit-id">
+
+    <div class="edit-layout">
+
+      <!-- COLUNA ESQUERDA: formulário -->
+      <div class="edit-form-col">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome do item *</label>
+            <input type="text" id="edit-nome" oninput="syncPreview()">
+          </div>
+          <div class="form-group">
+            <label>Categoria *</label>
+            <select id="edit-cat">
+              <option value="bebidas">🥤 Bebidas</option>
+              <option value="sucos">🍊 Sucos</option>
+              <option value="drinks">🍹 Drinks</option>
+              <option value="chopes">🍺 Chopes & Cervejas</option>
+              <option value="lanches">🍔 Lanches</option>
+              <option value="porcoes">🍟 Porções</option>
+              <option value="salgados">🥐 Salgadinhos</option>
+              <option value="doces">🍰 Doces</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Preço (R$) *</label>
+            <input type="number" id="edit-preco" step="0.50" oninput="syncPreview()">
+          </div>
+          <div class="form-group">
+            <label>Emoji</label>
+            <input type="text" id="edit-emoji" oninput="syncPreview()">
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea id="edit-desc" oninput="syncPreview()"></textarea>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label>URL da foto ou vídeo</label>
+            <input type="text" id="edit-media" oninput="syncPreviewMedia()">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;padding-top:20px;">
+            <input type="checkbox" id="edit-destaque" style="width:18px;height:18px;accent-color:var(--accent)">
+            <label for="edit-destaque" style="cursor:pointer;font-size:14px;">⭐ Destaque</label>
+          </div>
+          <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;padding-top:20px;">
+            <input type="checkbox" id="edit-disponivel" style="width:18px;height:18px;accent-color:var(--accent)">
+            <label for="edit-disponivel" style="cursor:pointer;font-size:14px;">👁️ Disponível</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA DIREITA: preview -->
+      <div class="edit-preview-col">
+        <div class="edit-preview-label">👁️ Preview do cliente</div>
+        <div class="preview-card">
+          <div class="preview-media" id="prevMedia">
+            <span id="prevEmoji">🍽️</span>
+            <img id="prevImg" src="" alt="" style="display:none;object-position:50% 50%;">
+          </div>
+          <div class="preview-body">
+            <div class="preview-name" id="prevNome">Nome do item</div>
+            <div class="preview-desc" id="prevDesc">Descrição do item aparece aqui</div>
+            <div class="preview-footer">
+              <div class="preview-price" id="prevPreco">R$ 0,00</div>
+              <button class="preview-btn">📲 Pedir</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controles de imagem -->
+        <div class="img-controls" id="imgControls" style="display:none;">
+          <div class="img-controls-label">🖼️ Ajustar imagem</div>
+
+          <div class="img-ctrl-row">
+            <label>Zoom</label>
+            <input type="range" id="ctrl-zoom" min="20" max="300" value="100" step="1" oninput="applyImgTransform()">
+            <span class="img-ctrl-val" id="val-zoom">100%</span>
+          </div>
+          <div class="img-ctrl-row">
+            <label>Horizontal</label>
+            <input type="range" id="ctrl-x" min="-100" max="100" value="0" step="1" oninput="applyImgTransform()">
+            <span class="img-ctrl-val" id="val-x">0%</span>
+          </div>
+          <div class="img-ctrl-row">
+            <label>Vertical</label>
+            <input type="range" id="ctrl-y" min="-100" max="100" value="0" step="1" oninput="applyImgTransform()">
+            <span class="img-ctrl-val" id="val-y">0%</span>
+          </div>
+
+          <button class="btn-reset-img" onclick="resetImgControls()">↺ Resetar posição</button>
+        </div>
+      </div>
+
+    </div><!-- /edit-layout -->
+
+    <div class="edit-actions">
+      <button class="btn-cancel-edit" onclick="closeEditModal()">Cancelar</button>
+      <button class="btn-salvar-edit" onclick="salvarEdicao()">💾 Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN TOGGLE -->
+<button class="admin-toggle" onclick="openAdmin()" title="Painel Admin">⚙️</button>
+
+<!-- SENHA -->
+<div class="senha-overlay" id="senhaOverlay">
+  <div class="senha-box">
+    <div class="senha-icon">🔐</div>
+    <h2>Área do Dono</h2>
+    <p>Digite a senha para acessar o painel de edição do cardápio</p>
+    <input type="password" id="senhaInput" placeholder="••••" onkeydown="if(event.key==='Enter')checkSenha()">
+    <button class="btn-entrar" onclick="checkSenha()">Entrar</button>
+    <p class="senha-erro" id="senhaErro">Senha incorreta. Tente novamente.</p>
+    <p style="margin-top:16px;font-size:12px;color:var(--muted);cursor:pointer;" onclick="closeSenha()">Cancelar</p>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-overlay" id="adminOverlay">
+  <div class="admin-panel">
+    <div class="admin-header">
+      <div class="admin-title">⚙️ Painel Admin</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span id="syncStatus" style="font-size:12px;color:var(--muted);">—</span>
+        <button class="btn-close-admin" onclick="closeAdmin()">✕ Fechar</button>
+      </div>
+    </div>
+
+    <!-- JSONBIN CONFIG -->
+    <div class="admin-section" id="sectionNuvem">
+      <h3>☁️ Conexão com a Nuvem (JSONBin)</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+        Para o cardápio funcionar igual pra todo mundo pelo link, conecte ao JSONBin (gratuito).<br>
+        <strong style="color:var(--text);">Como fazer:</strong> acesse <a href="https://jsonbin.io" target="_blank" style="color:var(--accent);">jsonbin.io</a> → crie conta grátis → em <em>API Keys</em> copie sua Master Key → em <em>Bins</em> crie um bin vazio e copie o ID.
+      </p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Master Key (começa com $2b...)</label>
+          <input type="password" id="cfg-apikey" placeholder="Cole sua Master Key aqui">
+        </div>
+        <div class="form-group">
+          <label>Bin ID (só os números/letras)</label>
+          <input type="text" id="cfg-binid" placeholder="Ex: 6643f1e...">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-add-item" onclick="salvarCreds()" style="flex:2;margin-top:8px;">🔗 Conectar à nuvem</button>
+        <button class="btn-add-item" onclick="exportarDados()" style="flex:1;margin-top:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);">📤 Exportar dados</button>
+      </div>
+      <div class="form-group" style="margin-top:14px;">
+        <label>📥 Importar dados de um backup (.json)</label>
+        <input type="file" id="importFile" accept=".json" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);width:100%;" onchange="importarDados(this.files[0])">
+      </div>
+    </div>
+
+    <!-- CONFIG GERAL -->
+    <div class="admin-section">
+      <h3>🏠 Configurações Gerais</h3>
+      <div class="config-row">
+        <div class="form-group">
+          <label>Nome do estabelecimento</label>
+          <input type="text" id="cfg-nome" placeholder="Ex: Panorama Deck">
+        </div>
+        <div class="form-group">
+          <label>Slogan / subtítulo</label>
+          <input type="text" id="cfg-slogan" placeholder="Ex: Lanches & Bebidas">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp (só números, com DDD)</label>
+          <input type="text" id="cfg-wpp" placeholder="Ex: 47999998888">
+        </div>
+        <div class="form-group">
+          <label>Texto do rodapé</label>
+          <input type="text" id="cfg-footer" placeholder="Ex: Seg–Dom 17h às 23h">
+        </div>
+        <div class="form-group">
+          <label>🎬 Vídeo do cabeçalho (YouTube ou link .mp4)</label>
+          <input type="text" id="cfg-hero-video" placeholder="Ex: https://youtube.com/watch?v=xxx ou link .mp4">
+          <small style="color:var(--muted);font-size:11px;margin-top:4px;">Cole o link do YouTube ou de um vídeo .mp4. Deixe em branco para remover.</small>
+        </div>
+      </div>
+      <button class="btn-add-item" onclick="salvarConfig()" style="margin-top:14px;">💾 Salvar configurações</button>
+    </div>
+
+    <!-- ADICIONAR ITEM -->
+    <div class="admin-section">
+      <h3>➕ Adicionar item</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome do item *</label>
+          <input type="text" id="add-nome" placeholder="Ex: Caipirinha de Limão">
+        </div>
+        <div class="form-group">
+          <label>Categoria *</label>
+          <select id="add-cat">
+            <option value="">Selecione...</option>
+            <option value="bebidas">🥤 Bebidas</option>
+            <option value="sucos">🍊 Sucos</option>
+            <option value="drinks">🍹 Drinks</option>
+            <option value="chopes">🍺 Chopes & Cervejas</option>
+            <option value="lanches">🍔 Lanches</option>
+            <option value="porcoes">🍟 Porções</option>
+            <option value="salgados">🥐 Salgadinhos</option>
+            <option value="doces">🍰 Doces</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Preço (R$) *</label>
+          <input type="number" id="add-preco" placeholder="0.00" step="0.50">
+        </div>
+        <div class="form-group">
+          <label>Emoji (ícone)</label>
+          <input type="text" id="add-emoji" placeholder="Ex: 🍹">
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Descrição</label>
+          <textarea id="add-desc" placeholder="Descreva o item, ingredientes, tamanho..."></textarea>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>URL da foto, vídeo ou YouTube</label>
+          <input type="text" id="add-media" placeholder="Link do YouTube, imagem ou vídeo .mp4">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;padding-top:20px;">
+          <input type="checkbox" id="add-destaque" style="width:18px;height:18px;accent-color:var(--accent)">
+          <label for="add-destaque" style="cursor:pointer;font-size:14px;">⭐ Marcar como destaque</label>
+        </div>
+      </div>
+      <button class="btn-add-item" onclick="addItem()">➕ Adicionar ao cardápio</button>
+    </div>
+
+    <!-- LISTA DE ITENS -->
+    <div class="admin-section">
+      <h3>📋 Itens do cardápio</h3>
+      <div class="item-list" id="adminItemList"></div>
+    </div>
+
+    <!-- SENHA -->
+    <div class="admin-section">
+      <h3>🔐 Alterar senha do admin</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nova senha</label>
+          <input type="password" id="nova-senha" placeholder="Nova senha">
+        </div>
+        <div class="form-group">
+          <label>Confirmar senha</label>
+          <input type="password" id="conf-senha" placeholder="Confirmar">
+        </div>
+      </div>
+      <button class="btn-add-item" onclick="alterarSenha()" style="background:var(--accent2);margin-top:8px;">🔒 Alterar senha</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────
+// ESTADO
+// ─────────────────────────────────────────────────────────
+const CATS = {
+  bebidas:  { label: 'Bebidas',          emoji: '🥤' },
+  sucos:    { label: 'Sucos',            emoji: '🍊' },
+  drinks:   { label: 'Drinks',           emoji: '🍹' },
+  chopes:   { label: 'Chopes & Cervejas',emoji: '🍺' },
+  lanches:  { label: 'Lanches',          emoji: '🍔' },
+  porcoes:  { label: 'Porções',          emoji: '🍟' },
+  salgados: { label: 'Salgadinhos',      emoji: '🥐' },
+  doces:    { label: 'Doces',            emoji: '🍰' },
+};
+
+const DEFAULT_ITEMS = [
+  { id:1,  nome:'Coca-Cola Gelada',        cat:'bebidas', preco:6,    emoji:'🥤', desc:'350ml bem gelada, direto da geladeira.',                                   media:'', destaque:false, disponivel:true },
+  { id:2,  nome:'Água com Gás',            cat:'bebidas', preco:4,    emoji:'💧', desc:'500ml, refrescante e gelada.',                                              media:'', destaque:false, disponivel:true },
+  { id:3,  nome:'Suco de Laranja',         cat:'sucos',   preco:10,   emoji:'🍊', desc:'Suco natural espremido na hora, 400ml.',                                   media:'', destaque:true,  disponivel:true },
+  { id:4,  nome:'Suco de Maracujá',        cat:'sucos',   preco:10,   emoji:'🌟', desc:'Suco de maracujá cremoso com leite condensado.',                           media:'', destaque:false, disponivel:true },
+  { id:5,  nome:'Caipirinha de Limão',     cat:'drinks',  preco:18,   emoji:'🍹', desc:'Cachaça, limão, açúcar e gelo. Clássica e refrescante.',                   media:'', destaque:true,  disponivel:true },
+  { id:6,  nome:'Caipiroska de Morango',   cat:'drinks',  preco:20,   emoji:'🍓', desc:'Vodka, morango fresco, limão e açúcar.',                                   media:'', destaque:false, disponivel:true },
+  { id:7,  nome:'Mojito',                  cat:'drinks',  preco:22,   emoji:'🌿', desc:'Rum branco, hortelã, limão, açúcar e água com gás.',                       media:'', destaque:false, disponivel:true },
+  { id:8,  nome:'Chope Pilsen 300ml',      cat:'chopes',  preco:9,    emoji:'🍺', desc:'Chope gelado direto da chopeira, 300ml.',                                  media:'', destaque:false, disponivel:true },
+  { id:9,  nome:'Chope Pilsen 500ml',      cat:'chopes',  preco:14,   emoji:'🍺', desc:'Chope gelado direto da chopeira, 500ml.',                                  media:'', destaque:true,  disponivel:true },
+  { id:10, nome:'Cerveja Long Neck',       cat:'chopes',  preco:10,   emoji:'🍻', desc:'Long neck gelada, várias marcas disponíveis.',                             media:'', destaque:false, disponivel:true },
+  { id:11, nome:'X-Burguer',              cat:'lanches', preco:22,   emoji:'🍔', desc:'Hambúrguer artesanal 150g, queijo, alface, tomate e maionese.',             media:'', destaque:true,  disponivel:true },
+  { id:12, nome:'X-Bacon Duplo',          cat:'lanches', preco:32,   emoji:'🥓', desc:'Dois hambúrgueres 150g, bacon crocante, queijo e molho especial.',          media:'', destaque:false, disponivel:true },
+  { id:13, nome:'Hot Dog Especial',        cat:'lanches', preco:18,   emoji:'🌭', desc:'Salsicha, batata palha, molho e queijo derretido.',                        media:'', destaque:false, disponivel:true },
+  { id:14, nome:'Batata Frita',            cat:'porcoes', preco:25,   emoji:'🍟', desc:'Porção de batata frita crocante, serve 2 pessoas.',                        media:'', destaque:false, disponivel:true },
+  { id:15, nome:'Frango à Passarinho',     cat:'porcoes', preco:45,   emoji:'🍗', desc:'Porção de frango frito temperado, serve 2–3 pessoas.',                     media:'', destaque:true,  disponivel:true },
+  { id:16, nome:'Isca de Peixe',           cat:'porcoes', preco:48,   emoji:'🐟', desc:'Isca de peixe empanado com molho tártaro, serve 2 pessoas.',               media:'', destaque:false, disponivel:true },
+  { id:17, nome:'Coxinha',                 cat:'salgados',preco:6,    emoji:'🥐', desc:'Coxinha de frango cremosa, massa crocante.',                               media:'', destaque:false, disponivel:true },
+  { id:18, nome:'Pastel de Queijo',        cat:'salgados',preco:6,    emoji:'🧀', desc:'Pastel frito na hora, recheio de queijo derretido.',                       media:'', destaque:false, disponivel:true },
+  { id:19, nome:'Espetinho de Carne',      cat:'salgados',preco:8,    emoji:'🍢', desc:'Espetinho de carne temperada na brasa.',                                   media:'', destaque:true,  disponivel:true },
+  { id:20, nome:'Pudim de Leite',          cat:'doces',   preco:12,   emoji:'🍮', desc:'Pudim caseiro com calda de caramelo.',                                     media:'', destaque:false, disponivel:true },
+  { id:21, nome:'Brownie com Sorvete',     cat:'doces',   preco:16,   emoji:'🍫', desc:'Brownie de chocolate quente com bola de sorvete de creme.',                media:'', destaque:true,  disponivel:true },
+  { id:22, nome:'Brigadeiro Gourmet',      cat:'doces',   preco:5,    emoji:'🍬', desc:'Brigadeiro artesanal, várias coberturas.',                                 media:'', destaque:false, disponivel:true },
+];
+
+const DEFAULT_CONFIG = {
+  nome: 'Meu Lugar',
+  slogan: 'Lanches, bebidas & boas pedidas',
+  wpp: '5547999998888',
+  footer: 'Seg–Dom a partir das 17h',
+  senha: '1234',
+  heroVideo: '',
+};
+
+// ─────────────────────────────────────────────────────────
+// HELPERS DE MÍDIA
+let nextId = 1;
+let catAtiva = 'all';
+let searchQ  = '';
+
+// ─────────────────────────────────────────────────────────
+// JSONBIN — NUVEM
+// ─────────────────────────────────────────────────────────
+// Pega credenciais salvas localmente (só no dispositivo do dono)
+function getCreds() {
+  try {
+    return JSON.parse(localStorage.getItem('cdp_creds') || 'null');
+  } catch(e) { return null; }
+}
+function saveCreds(c) {
+  localStorage.setItem('cdp_creds', JSON.stringify(c));
+}
+
+function setStatus(msg, tipo) {
+  const el = document.getElementById('syncStatus');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.color = tipo === 'ok' ? '#4caf50' : tipo === 'err' ? '#e74c3c' : '#e8a020';
+}
+
+async function cloudLoad() {
+  const creds = getCreds();
+  if(!creds?.binId || !creds?.apiKey) return false;
+  try {
+    setStatus('⏳ Carregando da nuvem...', 'info');
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${creds.binId}/latest`, {
+      headers: { 'X-Master-Key': creds.apiKey }
+    });
+    if(!r.ok) throw new Error('Erro ' + r.status);
+    const data = (await r.json()).record;
+    if(data.items)  items  = data.items;
+    if(data.config) config = {...DEFAULT_CONFIG, ...data.config};
+    nextId = Math.max(...items.map(i=>i.id), 0) + 1;
+    setStatus('✅ Sincronizado', 'ok');
+    return true;
+  } catch(e) {
+    setStatus('⚠️ Erro ao carregar nuvem', 'err');
+    return false;
+  }
+}
+
+async function cloudSave() {
+  const creds = getCreds();
+  if(!creds?.binId || !creds?.apiKey) {
+    // sem nuvem — salva local
+    localStorage.setItem('cdp_items',  JSON.stringify(items));
+    localStorage.setItem('cdp_config', JSON.stringify(config));
+    return;
+  }
+  try {
+    setStatus('⏳ Salvando...', 'info');
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${creds.binId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': creds.apiKey
+      },
+      body: JSON.stringify({ items, config })
+    });
+    if(!r.ok) throw new Error('Erro ' + r.status);
+    setStatus('✅ Salvo na nuvem', 'ok');
+  } catch(e) {
+    setStatus('⚠️ Erro ao salvar', 'err');
+    // salva local como backup
+    localStorage.setItem('cdp_items',  JSON.stringify(items));
+    localStorage.setItem('cdp_config', JSON.stringify(config));
+  }
+}
+
+// fallback: carrega do localStorage se não tiver nuvem
+function localLoad() {
+  try {
+    const i = localStorage.getItem('cdp_items');
+    const c = localStorage.getItem('cdp_config');
+    if(i) items  = JSON.parse(i);
+    if(c) config = {...DEFAULT_CONFIG, ...JSON.parse(c)};
+    if(!items.length) items = DEFAULT_ITEMS.map(x=>({...x}));
+    nextId = Math.max(...items.map(i=>i.id), 0) + 1;
+  } catch(e) {
+    items  = DEFAULT_ITEMS.map(x=>({...x}));
+    config = {...DEFAULT_CONFIG};
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// EXPORTAR dados do navegador atual (para migrar pro JSONBin)
+// ─────────────────────────────────────────────────────────
+function exportarDados() {
+  const dados = { items, config };
+  const blob = new Blob([JSON.stringify(dados, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cardapio-backup.json';
+  a.click();
+}
+
+function importarDados(file) {
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const dados = JSON.parse(e.target.result);
+      if(dados.items)  items  = dados.items;
+      if(dados.config) config = {...DEFAULT_CONFIG, ...dados.config};
+      nextId = Math.max(...items.map(i=>i.id), 0) + 1;
+      await cloudSave();
+      applyConfig(); renderCats(); renderCards(); renderAdminList();
+      alert('✅ Dados importados e salvos na nuvem!');
+    } catch(err) {
+      alert('Erro ao importar: arquivo inválido.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// compatibilidade — save() agora chama cloudSave()
+function save() { cloudSave(); }
+
+// ─────────────────────────────────────────────────────────
+// HELPERS DE MÍDIA
+// ─────────────────────────────────────────────────────────
+function getYouTubeId(url) {
+  if(!url) return null;
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function isVideoFile(url) {
+  return url && url.match(/\.(mp4|webm|ogg)/i);
+}
+
+function isImage(url) {
+  return url && !getYouTubeId(url) && !isVideoFile(url);
+}
+
+// ─────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────
+function applyConfig() {
+  document.title = config.nome + ' — Cardápio';
+  document.getElementById('nome-estabelecimento').innerHTML =
+    config.nome.split(' ').map((w,i)=> i===0 ? w : `<span>${w}</span>`).join(' ');
+  document.getElementById('slogan-estabelecimento').textContent = config.slogan;
+  document.getElementById('footer-info').textContent = config.footer;
+  const wppNum = (config.wpp||'').replace(/\D/g,'');
+  document.getElementById('wpp-footer').href = `https://wa.me/${wppNum}`;
+
+  // Hero background video
+  const heroBg = document.getElementById('heroBg');
+  const heroOverlay = document.getElementById('heroOverlay');
+  const url = config.heroVideo || '';
+  heroBg.innerHTML = '';
+  if(url) {
+    heroOverlay.style.display = '';
+    const ytId = getYouTubeId(url);
+    if(ytId) {
+      heroBg.className = 'hero-video-bg';
+      heroBg.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1" allow="autoplay" frameborder="0"></iframe>`;
+    } else if(isVideoFile(url)) {
+      const v = document.createElement('video');
+      v.src = url; v.autoplay = true; v.muted = true; v.loop = true; v.playsInline = true;
+      v.className = 'hero-video-bg';
+      heroBg.appendChild(v);
+    }
+  } else {
+    heroOverlay.style.display = 'none';
+  }
+}
+
+function renderCats() {
+  const nav = document.getElementById('catNav');
+  nav.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'cat-btn' + (catAtiva==='all'?' active':'');
+  all.innerHTML = '<span class="cat-emoji">🍽️</span> Tudo';
+  all.onclick = () => setCat('all');
+  nav.appendChild(all);
+
+  const catsPresentes = [...new Set(items.filter(i=>i.disponivel).map(i=>i.cat))];
+  catsPresentes.forEach(c => {
+    if(!CATS[c]) return;
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (catAtiva===c?' active':'');
+    btn.innerHTML = `<span class="cat-emoji">${CATS[c].emoji}</span> ${CATS[c].label}`;
+    btn.onclick = () => setCat(c);
+    nav.appendChild(btn);
+  });
+}
+
+function setCat(c) { catAtiva = c; renderCats(); renderCards(); }
+
+function renderCards() {
+  const main = document.getElementById('mainContent');
+  const noRes = document.getElementById('noResults');
+  main.innerHTML = '';
+
+  const q = searchQ.toLowerCase();
+  const filtered = items.filter(item => {
+    if(!item.disponivel) return false;
+    if(catAtiva !== 'all' && item.cat !== catAtiva) return false;
+    if(q && !item.nome.toLowerCase().includes(q) && !item.desc.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if(!filtered.length) { noRes.style.display='block'; return; }
+  noRes.style.display='none';
+
+  const grupos = catAtiva === 'all'
+    ? Object.keys(CATS).filter(c => filtered.some(i=>i.cat===c))
+    : [catAtiva];
+
+  grupos.forEach(cat => {
+    const grpItems = filtered.filter(i=>i.cat===cat);
+    if(!grpItems.length) return;
+
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.innerHTML = `${CATS[cat].emoji} <span>${CATS[cat].label}</span>`;
+    main.appendChild(lbl);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    grpItems.forEach(item => grid.appendChild(makeCard(item)));
+    main.appendChild(grid);
+  });
+}
+
+function makeCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card' + (item.disponivel?'':' unavailable');
+  card.onclick = () => openModal(item);
+
+  const ytId    = getYouTubeId(item.media);
+  const isVid   = isVideoFile(item.media);
+  const hasMedia = !!item.media;
+  let mediaHTML = '';
+
+  if(ytId) {
+    mediaHTML = `
+      <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1" allow="autoplay" frameborder="0"></iframe>
+      <div class="card-yt-badge">▶ YouTube</div>`;
+  } else if(isVid) {
+    mediaHTML = `<video src="${item.media}" muted loop autoplay playsinline style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"></video>`;
+  } else if(hasMedia) {
+    const scale = (item.imgZoom||100) / 100;
+    const x = item.imgX || 0;
+    const y = item.imgY || 0;
+    const ts = `transform:scale(${scale}) translate(${x*0.5}%,${y*0.5}%);transform-origin:center center;object-fit:contain;width:100%;height:100%;`;
+    mediaHTML = `<img src="${item.media}" alt="${item.nome}" style="${ts}"
+      onload="this.nextElementSibling.style.display='none'"
+      onerror="this.style.display='none';this.nextElementSibling.style.display=''">`;
+  }
+
+  card.innerHTML = `
+    <div class="card-media">
+      ${mediaHTML}
+      <span class="emoji-placeholder" style="${hasMedia && !isImage(item.media) ? 'display:none' : ''}">${item.emoji||'🍽️'}</span>
+    </div>
+    ${item.destaque ? '<div class="badge-destaque">⭐ Destaque</div>' : ''}
+    <div class="card-body">
+      <div class="card-name">${item.nome}</div>
+      <div class="card-desc">${item.desc || '&nbsp;'}</div>
+      <div class="card-footer">
+        <div class="card-price"><span class="cifrao">R$</span>${item.preco.toFixed(2).replace('.',',')}</div>
+        <button class="btn-pedir" onclick="event.stopPropagation();pedirWpp('${item.nome}',${item.preco})">📲 Pedir</button>
+      </div>
+    </div>`;
+  return card;
+}
+
+function renderAdminList() {
+  const el = document.getElementById('adminItemList');
+  el.innerHTML = '';
+  if(!items.length) { el.innerHTML='<p style="color:var(--muted);font-size:14px;">Nenhum item ainda.</p>'; return; }
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div class="item-row-info">
+        <div class="item-row-name">${item.emoji||''} ${item.nome}</div>
+        <div class="item-row-cat">${CATS[item.cat]?.label||item.cat}</div>
+      </div>
+      <div class="item-row-price">R$ ${item.preco.toFixed(2).replace('.',',')}</div>
+      <div class="item-row-actions">
+        <button class="btn-edit" title="Editar" onclick="openEditModal(${item.id})">✏️</button>
+        <button class="btn-toggle-avail" title="${item.disponivel?'Desativar':'Ativar'}" onclick="toggleDisp(${item.id})">${item.disponivel?'👁️':'🚫'}</button>
+        <button class="btn-del" title="Excluir" onclick="delItem(${item.id})">🗑️</button>
+      </div>`;
+    el.appendChild(row);
+  });
+}
+
+// ─────────────────────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────────────────────
+function openModal(item) {
+  document.getElementById('modalName').textContent  = item.nome;
+  document.getElementById('modalDesc').textContent  = item.desc || '';
+  document.getElementById('modalPrice').textContent = 'R$ ' + item.preco.toFixed(2).replace('.',',');
+  document.getElementById('modalEmoji').textContent = item.emoji || '🍽️';
+  document.getElementById('modalEmoji').style.display = item.media ? 'none' : '';
+
+  const media = document.getElementById('modalMedia');
+  media.querySelectorAll('img,video,iframe').forEach(el=>el.remove());
+
+  if(item.media) {
+    const ytId  = getYouTubeId(item.media);
+    const isVid = isVideoFile(item.media);
+    const s     = 'position:absolute;top:0;left:0;width:100%;height:100%;';
+
+    if(ytId) {
+      const ifr = document.createElement('iframe');
+      ifr.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&loop=1&playlist=${ytId}&controls=1&rel=0`;
+      ifr.allow = 'autoplay; fullscreen';
+      ifr.style.cssText = s + 'border:none;';
+      media.appendChild(ifr);
+    } else if(isVid) {
+      const v = document.createElement('video');
+      v.src = item.media; v.controls = true; v.autoplay = true; v.loop = true; v.playsInline = true;
+      v.style.cssText = s + 'object-fit:cover;';
+      media.appendChild(v);
+    } else {
+      const img = document.createElement('img');
+      img.src = item.media;
+      img.onerror = () => { img.style.display='none'; document.getElementById('modalEmoji').style.display=''; };
+      img.style.cssText = s + 'object-fit:contain;';
+      media.appendChild(img);
+    }
+  }
+
+  document.getElementById('modalWpp').onclick = () => pedirWpp(item.nome, item.preco);
+  document.getElementById('itemModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('itemModal').classList.remove('open');
+  document.getElementById('modalMedia').querySelectorAll('video').forEach(v=>v.pause());
+}
+document.getElementById('itemModal').onclick = e => { if(e.target===e.currentTarget) closeModal(); };
+
+// ─────────────────────────────────────────────────────────
+// WHATSAPP
+// ─────────────────────────────────────────────────────────
+function pedirWpp(nome, preco) {
+  const wpp = (config.wpp||'').replace(/\D/g,'');
+  const msg = encodeURIComponent(`Olá! Quero pedir: *${nome}* — R$ ${preco.toFixed(2).replace('.',',')}`);
+  window.open(`https://wa.me/${wpp}?text=${msg}`, '_blank');
+}
+
+// ─────────────────────────────────────────────────────────
+// SEARCH
+// ─────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQ = e.target.value;
+  if(searchQ) catAtiva = 'all';
+  renderCats();
+  renderCards();
+});
+
+// ─────────────────────────────────────────────────────────
+// ADMIN — SENHA
+// ─────────────────────────────────────────────────────────
+function openAdmin() {
+  document.getElementById('senhaOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('senhaInput').focus(), 100);
+}
+function closeSenha() {
+  document.getElementById('senhaOverlay').classList.remove('open');
+  document.getElementById('senhaInput').value='';
+  document.getElementById('senhaErro').style.display='none';
+}
+function checkSenha() {
+  const v = document.getElementById('senhaInput').value;
+  if(v === config.senha) {
+    closeSenha();
+    openAdminPanel();
+  } else {
+    document.getElementById('senhaErro').style.display='block';
+    document.getElementById('senhaInput').value='';
+    document.getElementById('senhaInput').focus();
+  }
+}
+
+function salvarCreds() {
+  const apiKey = document.getElementById('cfg-apikey').value.trim();
+  const binId  = document.getElementById('cfg-binid').value.trim();
+  if(!apiKey || !binId) { alert('Preencha a Master Key e o Bin ID!'); return; }
+  saveCreds({ apiKey, binId });
+  alert('✅ Conectado! Agora exporte seus dados do notebook e importe aqui para subir tudo pra nuvem.');
+  setStatus('✅ Nuvem configurada', 'ok');
+}
+
+function openAdminPanel() {
+  const creds = getCreds();
+  if(creds?.apiKey) document.getElementById('cfg-apikey').value = creds.apiKey;
+  if(creds?.binId)  document.getElementById('cfg-binid').value  = creds.binId;
+  document.getElementById('cfg-nome').value       = config.nome;
+  document.getElementById('cfg-slogan').value     = config.slogan;
+  document.getElementById('cfg-wpp').value        = config.wpp||'';
+  document.getElementById('cfg-footer').value     = config.footer;
+  document.getElementById('cfg-hero-video').value = config.heroVideo||'';
+  renderAdminList();
+  document.getElementById('adminOverlay').classList.add('open');
+}
+function closeAdmin() {
+  document.getElementById('adminOverlay').classList.remove('open');
+}
+
+// ─────────────────────────────────────────────────────────
+// ADMIN — AÇÕES
+// ─────────────────────────────────────────────────────────
+function salvarConfig() {
+  config.nome      = document.getElementById('cfg-nome').value   || config.nome;
+  config.slogan    = document.getElementById('cfg-slogan').value || config.slogan;
+  config.wpp       = document.getElementById('cfg-wpp').value    || config.wpp;
+  config.footer    = document.getElementById('cfg-footer').value || config.footer;
+  config.heroVideo = document.getElementById('cfg-hero-video').value.trim();
+  cloudSave();
+  applyConfig();
+  alert('✅ Configurações salvas!');
+}
+
+function addItem() {
+  const nome  = document.getElementById('add-nome').value.trim();
+  const cat   = document.getElementById('add-cat').value;
+  const preco = parseFloat(document.getElementById('add-preco').value);
+  const emoji = document.getElementById('add-emoji').value.trim() || '🍽️';
+  const desc  = document.getElementById('add-desc').value.trim();
+  const media = document.getElementById('add-media').value.trim();
+  const dest  = document.getElementById('add-destaque').checked;
+
+  if(!nome || !cat || isNaN(preco)) { alert('Preencha nome, categoria e preço!'); return; }
+
+  items.push({ id: nextId++, nome, cat, preco, emoji, desc, media, destaque: dest, disponivel: true });
+  cloudSave();
+
+  // limpar
+  ['add-nome','add-preco','add-emoji','add-desc','add-media'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('add-cat').value='';
+  document.getElementById('add-destaque').checked=false;
+
+  renderCats();
+  renderCards();
+  renderAdminList();
+  alert('✅ Item adicionado!');
+}
+
+function toggleDisp(id) {
+  items = items.map(i => i.id===id ? {...i, disponivel: !i.disponivel} : i);
+  cloudSave();
+  renderCats();
+  renderCards();
+  renderAdminList();
+}
+
+function delItem(id) {
+  if(!confirm('Excluir este item?')) return;
+  items = items.filter(i=>i.id!==id);
+  cloudSave();
+  renderCats();
+  renderCards();
+  renderAdminList();
+}
+
+function alterarSenha() {
+  const n = document.getElementById('nova-senha').value;
+  const c = document.getElementById('conf-senha').value;
+  if(!n) { alert('Digite a nova senha.'); return; }
+  if(n !== c) { alert('As senhas não coincidem.'); return; }
+  config.senha = n;
+  cloudSave();
+  document.getElementById('nova-senha').value='';
+  document.getElementById('conf-senha').value='';
+  alert('✅ Senha alterada com sucesso!');
+}
+
+// ─────────────────────────────────────────────────────────
+// EDIÇÃO DE ITEM — PREVIEW AO VIVO
+// ─────────────────────────────────────────────────────────
+function syncPreview() {
+  const nome  = document.getElementById('edit-nome').value  || 'Nome do item';
+  const desc  = document.getElementById('edit-desc').value  || 'Descrição do item';
+  const preco = parseFloat(document.getElementById('edit-preco').value) || 0;
+  const emoji = document.getElementById('edit-emoji').value || '🍽️';
+  document.getElementById('prevNome').textContent  = nome;
+  document.getElementById('prevDesc').textContent  = desc;
+  document.getElementById('prevPreco').textContent = 'R$ ' + preco.toFixed(2).replace('.',',');
+  const img = document.getElementById('prevImg');
+  if(img.style.display === 'none') {
+    document.getElementById('prevEmoji').textContent = emoji;
+  }
+}
+
+function syncPreviewMedia() {
+  const url      = document.getElementById('edit-media').value.trim();
+  const img      = document.getElementById('prevImg');
+  const emoji    = document.getElementById('prevEmoji');
+  const controls = document.getElementById('imgControls');
+  const prevMedia = document.getElementById('prevMedia');
+
+  // limpa iframes/videos antigos
+  prevMedia.querySelectorAll('iframe,video').forEach(e=>e.remove());
+  img.style.display = 'none';
+  controls.style.display = 'none';
+
+  if(!url) {
+    emoji.style.display = '';
+    return;
+  }
+
+  const ytId  = getYouTubeId(url);
+  const isVid = isVideoFile(url);
+
+  if(ytId) {
+    emoji.style.display = 'none';
+    const ifr = document.createElement('iframe');
+    ifr.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0`;
+    ifr.allow = 'autoplay';
+    ifr.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:none;';
+    prevMedia.appendChild(ifr);
+  } else if(isVid) {
+    emoji.style.display = 'none';
+    const v = document.createElement('video');
+    v.src = url; v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
+    v.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;';
+    prevMedia.appendChild(v);
+  } else {
+    // imagem
+    img.src = url;
+    img.onload = () => {
+      img.style.display = '';
+      emoji.style.display = 'none';
+      controls.style.display = 'block';
+      applyImgTransform();
+    };
+    img.onerror = () => {
+      img.style.display = 'none';
+      emoji.style.display = '';
+      controls.style.display = 'none';
+    };
+  }
+}
+
+function applyImgTransform() {
+  const zoom = parseInt(document.getElementById('ctrl-zoom').value);
+  const x    = parseInt(document.getElementById('ctrl-x').value);
+  const y    = parseInt(document.getElementById('ctrl-y').value);
+
+  document.getElementById('val-zoom').textContent = zoom + '%';
+  document.getElementById('val-x').textContent    = x + '%';
+  document.getElementById('val-y').textContent    = y + '%';
+
+  const img       = document.getElementById('prevImg');
+  const container = document.getElementById('prevMedia');
+  const cw        = container.offsetWidth  || 280;
+  const ch        = container.offsetHeight || 180;
+
+  const scale = zoom / 100;
+
+  // tamanho base: cabe inteiro no container
+  const iw = img.naturalWidth  || cw;
+  const ih = img.naturalHeight || ch;
+  const fit = Math.min(cw / iw, ch / ih);
+  const baseW = iw * fit;
+  const baseH = ih * fit;
+
+  // range X/Y move em px dentro do espaço disponível
+  const maxMoveX = (cw / 2) + (baseW * scale / 2);
+  const maxMoveY = (ch / 2) + (baseH * scale / 2);
+  const tx = (x / 100) * maxMoveX;
+  const ty = (y / 100) * maxMoveY;
+
+  img.style.width           = baseW + 'px';
+  img.style.height          = baseH + 'px';
+  img.style.left            = '50%';
+  img.style.top             = '50%';
+  img.style.marginLeft      = (-baseW / 2) + 'px';
+  img.style.marginTop       = (-baseH / 2) + 'px';
+  img.style.transform       = `scale(${scale}) translate(${tx / scale}px, ${ty / scale}px)`;
+  img.style.transformOrigin = 'center center';
+  img.style.objectFit       = 'unset';
+}
+
+function resetImgControls() {
+  document.getElementById('ctrl-zoom').value = 100;
+  document.getElementById('ctrl-x').value    = 0;
+  document.getElementById('ctrl-y').value    = 0;
+  applyImgTransform();
+}
+
+function openEditModal(id) {
+  const item = items.find(i=>i.id===id);
+  if(!item) return;
+  document.getElementById('edit-id').value           = item.id;
+  document.getElementById('edit-nome').value         = item.nome;
+  document.getElementById('edit-cat').value          = item.cat;
+  document.getElementById('edit-preco').value        = item.preco;
+  document.getElementById('edit-emoji').value        = item.emoji||'';
+  document.getElementById('edit-desc').value         = item.desc||'';
+  document.getElementById('edit-media').value        = item.media||'';
+  document.getElementById('edit-destaque').checked   = !!item.destaque;
+  document.getElementById('edit-disponivel').checked = !!item.disponivel;
+
+  // restaurar controles salvos
+  document.getElementById('ctrl-zoom').value = item.imgZoom || 100;
+  document.getElementById('ctrl-x').value    = item.imgX    || 0;
+  document.getElementById('ctrl-y').value    = item.imgY    || 0;
+
+  syncPreview();
+  syncPreviewMedia();
+
+  document.getElementById('editOverlay').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('editOverlay').classList.remove('open');
+}
+
+function salvarEdicao() {
+  const id    = parseInt(document.getElementById('edit-id').value);
+  const nome  = document.getElementById('edit-nome').value.trim();
+  const cat   = document.getElementById('edit-cat').value;
+  const preco = parseFloat(document.getElementById('edit-preco').value);
+  if(!nome || !cat || isNaN(preco)) { alert('Preencha nome, categoria e preço!'); return; }
+
+  items = items.map(i => i.id !== id ? i : {
+    ...i, nome, cat, preco,
+    emoji:      document.getElementById('edit-emoji').value.trim() || i.emoji,
+    desc:       document.getElementById('edit-desc').value.trim(),
+    media:      document.getElementById('edit-media').value.trim(),
+    destaque:   document.getElementById('edit-destaque').checked,
+    disponivel: document.getElementById('edit-disponivel').checked,
+    imgZoom:    parseInt(document.getElementById('ctrl-zoom').value) || 100,
+    imgX:       parseInt(document.getElementById('ctrl-x').value)    || 0,
+    imgY:       parseInt(document.getElementById('ctrl-y').value)    || 0,
+  });
+
+  cloudSave();
+  closeEditModal();
+  renderCats(); renderCards(); renderAdminList();
+}
+
+document.getElementById('editOverlay').onclick = e => { if(e.target===e.currentTarget) closeEditModal(); };
+
+// ─────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────
+(async () => {
+  const creds = getCreds();
+  if(creds?.binId && creds?.apiKey) {
+    const ok = await cloudLoad();
+    if(!ok) localLoad(); // fallback
+  } else {
+    localLoad();
+    setStatus('☁️ Sem nuvem configurada', 'info');
+  }
+  applyConfig();
+  renderCats();
+  renderCards();
+})();
+</script>
+</body>
+</html>
