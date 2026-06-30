@@ -845,14 +845,110 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     color: var(--text);
-    font-size: 18px;
+    font-size: 16px;
     text-align: center;
-    letter-spacing: 4px;
+    letter-spacing: 2px;
     outline: none;
     font-family: 'Inter', sans-serif;
     margin-bottom: 16px;
   }
   .senha-box input:focus { border-color: var(--accent); }
+  .senha-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: -10px;
+    margin-bottom: 16px;
+  }
+
+  /* ── EMOJI PICKER ── */
+  .emoji-field { position: relative; }
+  .emoji-field-row { display: flex; gap: 8px; }
+  .emoji-field-row input {
+    flex: 1;
+  }
+  .btn-emoji-picker {
+    width: 44px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .btn-emoji-picker:hover { border-color: var(--accent); }
+  .emoji-picker-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    z-index: 50;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 12px 30px rgba(0,0,0,.5);
+  }
+  .emoji-picker-panel.open { display: block; }
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .emoji-grid button {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    padding: 6px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .emoji-grid button:hover { background: rgba(232,160,32,.2); }
+
+  /* ── DIAS DA SEMANA ── */
+  .dia-btn {
+    padding: 10px 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: center;
+  }
+  .dia-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0f0d0a;
+  }
+
+  /* ── BADGE FECHADO ── */
+  .status-funcionamento {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 50px;
+    margin-top: 14px;
+  }
+  .status-funcionamento.aberto {
+    background: rgba(76,175,80,.15);
+    color: #4caf50;
+    border: 1px solid rgba(76,175,80,.3);
+  }
+  .status-funcionamento.fechado {
+    background: rgba(231,76,60,.15);
+    color: #e74c3c;
+    border: 1px solid rgba(231,76,60,.3);
+  }
   .btn-entrar {
     width: 100%;
     padding: 14px;
@@ -890,6 +986,7 @@
     <div class="hero-badge">✦ cardápio digital ✦</div>
     <h1 id="nome-estabelecimento">Meu <span>Lugar</span></h1>
     <p class="hero-sub" id="slogan-estabelecimento">Lanches, bebidas & boas pedidas</p>
+    <div id="statusFuncionamento"></div>
     <div class="hero-divider"></div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
@@ -912,7 +1009,7 @@
 <!-- FOOTER -->
 <footer>
   <p id="footer-info">Clique em qualquer item para ver mais detalhes e fazer seu pedido</p>
-  <a id="wpp-footer" href="#" class="wpp-link" target="_blank">
+  <a id="wpp-footer" href="#" class="wpp-link" target="_blank" onclick="return checkAbertoFooter(event)">
     📲 Falar no WhatsApp
   </a>
 </footer>
@@ -969,9 +1066,13 @@
             <label>Preço (R$) *</label>
             <input type="number" id="edit-preco" step="0.50" oninput="syncPreview()">
           </div>
-          <div class="form-group">
+          <div class="form-group emoji-field">
             <label>Emoji</label>
-            <input type="text" id="edit-emoji" oninput="syncPreview()">
+            <div class="emoji-field-row">
+              <input type="text" id="edit-emoji" oninput="syncPreview()">
+              <button type="button" class="btn-emoji-picker" onclick="toggleEmojiPicker('edit-emoji-panel')">😀</button>
+            </div>
+            <div class="emoji-picker-panel" id="edit-emoji-panel"></div>
           </div>
         </div>
         <div class="form-row full">
@@ -1133,6 +1234,43 @@
       <button class="btn-add-item" onclick="salvarConfig()" style="margin-top:14px;">💾 Salvar configurações</button>
     </div>
 
+    <!-- HORÁRIO DE FUNCIONAMENTO -->
+    <div class="admin-section">
+      <h3>🕒 Horário de Funcionamento</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+        Marque os dias que funciona e o horário. Fora desse horário, o cliente que tentar pedir pelo WhatsApp recebe um aviso automático e o pedido é bloqueado.
+      </p>
+
+      <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;margin-bottom:14px;">
+        <input type="checkbox" id="cfg-horario-ativo" style="width:18px;height:18px;accent-color:var(--accent)">
+        <label for="cfg-horario-ativo" style="cursor:pointer;font-size:14px;">✅ Ativar controle de horário de funcionamento</label>
+      </div>
+
+      <div id="diasSemanaGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px;">
+        <!-- preenchido via JS -->
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Abre às</label>
+          <input type="time" id="cfg-hora-abre" value="17:00">
+        </div>
+        <div class="form-group">
+          <label>Fecha às</label>
+          <input type="time" id="cfg-hora-fecha" value="23:00">
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Mensagem quando estiver fechado</label>
+          <textarea id="cfg-msg-fechado" placeholder="Ex: Estamos fechados agora! Nosso horário é de Seg-Dom das 17h às 23h. Já vamos atender você assim que abrirmos 😊"></textarea>
+        </div>
+      </div>
+
+      <button class="btn-add-item" onclick="salvarHorario()" style="margin-top:8px;">💾 Salvar horário</button>
+    </div>
+
     <!-- ADICIONAR ITEM -->
     <div class="admin-section">
       <h3>➕ Adicionar item</h3>
@@ -1161,9 +1299,13 @@
           <label>Preço (R$) *</label>
           <input type="number" id="add-preco" placeholder="0.00" step="0.50">
         </div>
-        <div class="form-group">
+        <div class="form-group emoji-field">
           <label>Emoji (ícone)</label>
-          <input type="text" id="add-emoji" placeholder="Ex: 🍹">
+          <div class="emoji-field-row">
+            <input type="text" id="add-emoji" placeholder="Ex: 🍹">
+            <button type="button" class="btn-emoji-picker" onclick="toggleEmojiPicker('add-emoji-panel')">😀</button>
+          </div>
+          <div class="emoji-picker-panel" id="add-emoji-panel"></div>
         </div>
       </div>
       <div class="form-row full">
@@ -1196,14 +1338,15 @@
     <!-- SENHA -->
     <div class="admin-section">
       <h3>🔐 Alterar senha do admin</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Use uma senha forte: misture letras, números e pelo menos 6 caracteres. Ex: Matilde2026!</p>
       <div class="form-row">
         <div class="form-group">
           <label>Nova senha</label>
-          <input type="password" id="nova-senha" placeholder="Nova senha">
+          <input type="text" id="nova-senha" placeholder="Ex: Matilde2026!">
         </div>
         <div class="form-group">
           <label>Confirmar senha</label>
-          <input type="password" id="conf-senha" placeholder="Confirmar">
+          <input type="text" id="conf-senha" placeholder="Confirmar">
         </div>
       </div>
       <button class="btn-add-item" onclick="alterarSenha()" style="background:var(--accent2);margin-top:8px;">🔒 Alterar senha</button>
@@ -1216,6 +1359,52 @@
 // ─────────────────────────────────────────────────────────
 // ESTADO
 // ─────────────────────────────────────────────────────────
+const EMOJI_LIST = [
+  '🍔','🍟','🌭','🥪','🌮','🌯','🍕','🥙','🥗','🍗',
+  '🍖','🥓','🍤','🐟','🍢','🥟','🍱','🍝','🍛','🍜',
+  '🥐','🧀','🥯','🍞','🥨','🧇','🥞','🍳','🥚','🍩',
+  '🍰','🎂','🧁','🍮','🍫','🍬','🍭','🍪','🍦','🍨',
+  '🍧','🍓','🍌','🍉','🍇','🍍','🥭','🍑','🍒','🍋',
+  '🥤','🧃','☕','🍵','🧉','🍷','🍸','🍹','🍺','🍻',
+  '🥂','🍾','🥃','🍶','💧','🌿','⭐','🔥','✨','❤️'
+];
+
+function toggleEmojiPicker(panelId) {
+  const panel = document.getElementById(panelId);
+  const isOpen = panel.classList.contains('open');
+  document.querySelectorAll('.emoji-picker-panel').forEach(p => p.classList.remove('open'));
+  if(isOpen) return;
+  if(!panel.dataset.filled) {
+    const grid = document.createElement('div');
+    grid.className = 'emoji-grid';
+    EMOJI_LIST.forEach(em => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = em;
+      btn.onclick = () => selectEmoji(panelId, em);
+      grid.appendChild(btn);
+    });
+    panel.appendChild(grid);
+    panel.dataset.filled = '1';
+  }
+  panel.classList.add('open');
+}
+
+function selectEmoji(panelId, emoji) {
+  const targetId = panelId === 'add-emoji-panel' ? 'add-emoji' : 'edit-emoji';
+  const input = document.getElementById(targetId);
+  input.value = emoji;
+  input.dispatchEvent(new Event('input'));
+  document.getElementById(panelId).classList.remove('open');
+}
+
+// fecha picker se clicar fora
+document.addEventListener('click', e => {
+  if(!e.target.closest('.emoji-field')) {
+    document.querySelectorAll('.emoji-picker-panel').forEach(p => p.classList.remove('open'));
+  }
+});
+
 const CATS = {
   bebidas:  { label: 'Bebidas',          emoji: '🥤' },
   sucos:    { label: 'Sucos',            emoji: '🍊' },
@@ -1259,6 +1448,11 @@ const DEFAULT_CONFIG = {
   footer: 'Seg–Dom a partir das 17h',
   senha: '1234',
   heroVideo: '',
+  horarioAtivo: false,
+  diasFuncionamento: [0,1,2,3,4,5,6], // 0=domingo ... 6=sábado
+  horaAbre: '17:00',
+  horaFecha: '23:00',
+  msgFechado: 'Estamos fechados agora! Confira nosso horário de funcionamento no cardápio. Já vamos te atender assim que abrirmos 😊',
 };
 
 // ─────────────────────────────────────────────────────────
@@ -1474,6 +1668,80 @@ function applyConfig() {
   } else {
     heroOverlay.style.display = 'none';
   }
+
+  renderStatusFuncionamento();
+}
+
+// ─────────────────────────────────────────────────────────
+// HORÁRIO DE FUNCIONAMENTO
+// ─────────────────────────────────────────────────────────
+function estaAberto() {
+  if(!config.horarioAtivo) return true;
+
+  const agora = new Date();
+  const diaSemana = agora.getDay(); // 0=domingo ... 6=sábado
+  const dias = config.diasFuncionamento || [0,1,2,3,4,5,6];
+  if(!dias.includes(diaSemana)) return false;
+
+  const [hAbreH, hAbreM]  = (config.horaAbre  || '00:00').split(':').map(Number);
+  const [hFechaH, hFechaM] = (config.horaFecha || '23:59').split(':').map(Number);
+
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+  const minutosAbre   = hAbreH * 60 + hAbreM;
+  const minutosFecha  = hFechaH * 60 + hFechaM;
+
+  // horário "normal" (abre de manhã, fecha de noite no mesmo dia)
+  if(minutosAbre <= minutosFecha) {
+    return minutosAgora >= minutosAbre && minutosAgora < minutosFecha;
+  }
+  // horário que vira a noite (ex: abre 18h, fecha 02h do dia seguinte)
+  return minutosAgora >= minutosAbre || minutosAgora < minutosFecha;
+}
+
+function renderStatusFuncionamento() {
+  const el = document.getElementById('statusFuncionamento');
+  if(!config.horarioAtivo) { el.innerHTML = ''; return; }
+
+  if(estaAberto()) {
+    el.innerHTML = `<span class="status-funcionamento aberto">🟢 Aberto agora</span>`;
+  } else {
+    el.innerHTML = `<span class="status-funcionamento fechado">🔴 Fechado agora · ${config.horaAbre}–${config.horaFecha}</span>`;
+  }
+}
+
+const NOMES_DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function renderDiasSemana() {
+  const grid = document.getElementById('diasSemanaGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  const diasAtivos = config.diasFuncionamento || [0,1,2,3,4,5,6];
+  NOMES_DIAS.forEach((nome, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'dia-btn' + (diasAtivos.includes(idx) ? ' active' : '');
+    btn.textContent = nome;
+    btn.onclick = () => {
+      btn.classList.toggle('active');
+    };
+    btn.dataset.dia = idx;
+    grid.appendChild(btn);
+  });
+}
+
+function salvarHorario() {
+  config.horarioAtivo = document.getElementById('cfg-horario-ativo').checked;
+  config.horaAbre     = document.getElementById('cfg-hora-abre').value || '17:00';
+  config.horaFecha    = document.getElementById('cfg-hora-fecha').value || '23:00';
+  config.msgFechado   = document.getElementById('cfg-msg-fechado').value.trim() || DEFAULT_CONFIG.msgFechado;
+
+  const dias = [];
+  document.querySelectorAll('#diasSemanaGrid .dia-btn.active').forEach(b => dias.push(parseInt(b.dataset.dia)));
+  config.diasFuncionamento = dias.length ? dias : [0,1,2,3,4,5,6];
+
+  cloudSave();
+  applyConfig();
+  alert('✅ Horário de funcionamento salvo!');
 }
 
 function renderCats() {
@@ -1649,8 +1917,23 @@ document.getElementById('itemModal').onclick = e => { if(e.target===e.currentTar
 // ─────────────────────────────────────────────────────────
 // WHATSAPP
 // ─────────────────────────────────────────────────────────
+function checkAbertoFooter(e) {
+  if(config.horarioAtivo && !estaAberto()) {
+    e.preventDefault();
+    alert('🔴 ' + (config.msgFechado || DEFAULT_CONFIG.msgFechado) + `\n\nHorário: ${config.horaAbre} às ${config.horaFecha}`);
+    return false;
+  }
+  return true;
+}
+
 function pedirWpp(nome, preco) {
   const wpp = (config.wpp||'').replace(/\D/g,'');
+
+  if(config.horarioAtivo && !estaAberto()) {
+    alert('🔴 ' + (config.msgFechado || DEFAULT_CONFIG.msgFechado) + `\n\nHorário: ${config.horaAbre} às ${config.horaFecha}`);
+    return;
+  }
+
   const msg = encodeURIComponent(`Olá! Quero pedir: *${nome}* — R$ ${preco.toFixed(2).replace('.',',')}`);
   window.open(`https://wa.me/${wpp}?text=${msg}`, '_blank');
 }
@@ -1722,6 +2005,13 @@ async function openAdminPanel() {
   document.getElementById('cfg-wpp').value        = config.wpp||'';
   document.getElementById('cfg-footer').value     = config.footer;
   document.getElementById('cfg-hero-video').value = config.heroVideo||'';
+
+  document.getElementById('cfg-horario-ativo').checked = !!config.horarioAtivo;
+  document.getElementById('cfg-hora-abre').value  = config.horaAbre  || '17:00';
+  document.getElementById('cfg-hora-fecha').value = config.horaFecha || '23:00';
+  document.getElementById('cfg-msg-fechado').value = config.msgFechado || DEFAULT_CONFIG.msgFechado;
+  renderDiasSemana();
+
   renderAdminList();
   document.getElementById('adminOverlay').classList.add('open');
 }
@@ -1790,6 +2080,12 @@ function alterarSenha() {
   const c = document.getElementById('conf-senha').value;
   if(!n) { alert('Digite a nova senha.'); return; }
   if(n !== c) { alert('As senhas não coincidem.'); return; }
+  if(n.length < 6) { alert('⚠️ Use pelo menos 6 caracteres para uma senha mais segura.'); return; }
+  const temLetra  = /[a-zA-Z]/.test(n);
+  const temNumero = /[0-9]/.test(n);
+  if(!temLetra || !temNumero) {
+    if(!confirm('⚠️ Sua senha está fraca (só números ou só letras). Recomendamos misturar letras e números, ex: Matilde2026.\n\nQuer salvar assim mesmo?')) return;
+  }
   config.senha = n;
   cloudSave();
   document.getElementById('nova-senha').value='';
