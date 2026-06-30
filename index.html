@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cardápio</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&family=Montserrat:wght@700;900&family=Poppins:wght@600;700;800&family=Bebas+Neue&family=Pacifico&family=Oswald:wght@600;700&family=Lobster&family=Merriweather:wght@700;900&family=Great+Vibes&family=Dancing+Script:wght@700&family=Raleway:wght@400;500;600;700&family=Lato:wght@300;400;700&family=Nunito:wght@400;600;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0f0d0a;
@@ -23,7 +23,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--fonte-geral, 'Inter'), sans-serif;
     min-height: 100vh;
   }
 
@@ -41,8 +41,11 @@
     inset: 0;
     width: 100%; height: 100%;
     object-fit: cover;
+    object-position: var(--hero-bg-pos-x, 50%) var(--hero-bg-pos-y, 50%);
+    transform: scale(var(--hero-bg-zoom, 1));
+    transform-origin: center center;
     z-index: 0;
-    opacity: 0.35;
+    opacity: var(--hero-bg-opacity, 0.35);
     pointer-events: none;
   }
   .hero-video-bg iframe {
@@ -54,10 +57,27 @@
     pointer-events: none;
     border: none;
   }
+  /* ── SLIDE DE IMAGENS DO HERO ── */
+  .hero-slide-img {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: var(--hero-bg-pos-x, 50%) var(--hero-bg-pos-y, 50%);
+    transform: scale(var(--hero-bg-zoom, 1));
+    transform-origin: center center;
+    opacity: 0;
+    transition: opacity 1s ease;
+    pointer-events: none;
+  }
+  .hero-slide-img.active {
+    opacity: var(--hero-bg-opacity, 0.35);
+  }
+
   .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(15,13,10,.5) 0%, rgba(15,13,10,.3) 50%, rgba(15,13,10,.7) 100%);
+    background: linear-gradient(to bottom, rgba(15,13,10,var(--hero-overlay-top,.5)) 0%, rgba(15,13,10,var(--hero-overlay-mid,.3)) 50%, rgba(15,13,10,var(--hero-overlay-bottom,.7)) 100%);
     z-index: 1;
   }
   .hero-content {
@@ -74,21 +94,23 @@
     margin-bottom: 16px;
   }
   .hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(36px, 8vw, 72px);
+    font-family: var(--titulo-fonte, 'Playfair Display'), serif;
+    font-size: var(--titulo-tamanho, clamp(36px, 8vw, 72px));
     font-weight: 900;
     line-height: 1;
     letter-spacing: -1px;
-    color: var(--text);
+    color: var(--titulo-cor, var(--text));
+    text-shadow: var(--titulo-contorno, none);
   }
   .hero h1 span {
-    color: var(--accent);
+    color: var(--titulo-cor-destaque, var(--accent));
   }
   .hero-sub {
     margin-top: 12px;
-    font-size: 14px;
-    color: var(--muted);
+    font-size: var(--slogan-tamanho, 14px);
+    color: var(--slogan-cor, var(--muted));
     letter-spacing: 1px;
+    text-shadow: var(--slogan-contorno, none);
   }
   .hero-divider {
     width: 60px;
@@ -131,14 +153,13 @@
   /* ── CATEGORIES ── */
   .cats {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
-    overflow-x: auto;
+    justify-content: center;
     padding: 28px 16px 0;
-    scrollbar-width: none;
     max-width: 900px;
     margin: 0 auto;
   }
-  .cats::-webkit-scrollbar { display: none; }
   .cat-btn {
     flex-shrink: 0;
     padding: 10px 20px;
@@ -216,17 +237,10 @@
     position: relative;
     overflow: hidden;
   }
-  .card-media img,
-  .card-media video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0; left: 0;
-  }
   .card-media .emoji-placeholder {
     font-size: 56px;
-    z-index: 1;
+    position: relative;
+    z-index: 2;
   }
   .card-media iframe {
     position: absolute;
@@ -349,12 +363,10 @@
     position: relative;
     overflow: hidden;
   }
-  .modal-media img,
-  .modal-media video {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0; left: 0;
+  #modalEmoji {
+    position: relative;
+    z-index: 2;
+    font-size: 72px;
   }
   .modal-body { padding: 24px; }
   .modal-name {
@@ -933,11 +945,12 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
+    font-size: var(--status-tamanho, 12px);
     font-weight: 600;
     padding: 6px 14px;
     border-radius: 50px;
     margin-top: 14px;
+    text-shadow: var(--status-contorno, none);
   }
   .status-funcionamento.aberto {
     background: rgba(76,175,80,.15);
@@ -1023,6 +1036,208 @@
     cursor: pointer;
   }
   .btn-nome-confirmar:hover { background: #1da853; }
+
+  /* ── QUANTIDADE NO CARD ── */
+  .qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .qty-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+    line-height: 1;
+  }
+  .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .qty-btn:active { transform: scale(.9); }
+  .qty-val {
+    min-width: 20px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .btn-add-cart {
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-add-cart:hover { background: #a93226; }
+  .btn-add-cart:active { transform: scale(.96); }
+  .btn-add-cart.in-cart {
+    background: #25d366;
+  }
+  .btn-add-cart.in-cart:hover { background: #1da853; }
+
+  /* ── CARRINHO FLUTUANTE ── */
+  .cart-fab {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #0f0d0a;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.5);
+    z-index: 150;
+    transition: transform .2s;
+  }
+  .cart-fab.show { display: flex; }
+  .cart-fab:active { transform: translateX(-50%) scale(.97); }
+  .cart-fab-badge {
+    background: rgba(15,13,10,.25);
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+
+  /* ── MODAL CARRINHO ── */
+  .cart-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.85);
+    z-index: 550;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .cart-overlay.open { display: flex; }
+  .cart-sheet {
+    background: var(--card);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp .25s ease;
+  }
+  .cart-header {
+    padding: 20px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cart-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--accent);
+  }
+  .btn-close-cart {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 20px;
+  }
+  .cart-item-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cart-item-price {
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .cart-item-remove {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .cart-item-remove:hover { color: var(--accent2); }
+  .cart-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+  .cart-footer {
+    padding: 16px 20px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .cart-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .cart-total-label { font-size: 14px; color: var(--muted); }
+  .cart-total-value { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .btn-finalizar-pedido {
+    width: 100%;
+    padding: 14px;
+    background: #25d366;
+    border: none;
+    border-radius: 50px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-finalizar-pedido:hover { background: #1da853; }
+  .btn-limpar-carrinho {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .btn-limpar-carrinho:hover { color: var(--accent2); }
   .btn-entrar {
     width: 100%;
     padding: 14px;
@@ -1100,7 +1315,7 @@
       <div class="modal-price" id="modalPrice"></div>
       <div class="modal-actions">
         <button class="btn-fechar" onclick="closeModal()">Fechar</button>
-        <button class="btn-wpp" id="modalWpp">📲 Pedir pelo WhatsApp</button>
+        <button class="btn-wpp" id="modalWpp">🛒 Adicionar ao pedido</button>
       </div>
     </div>
   </div>
@@ -1123,16 +1338,7 @@
           </div>
           <div class="form-group">
             <label>Categoria *</label>
-            <select id="edit-cat">
-              <option value="bebidas">🥤 Bebidas</option>
-              <option value="sucos">🍊 Sucos</option>
-              <option value="drinks">🍹 Drinks</option>
-              <option value="chopes">🍺 Chopes & Cervejas</option>
-              <option value="lanches">🍔 Lanches</option>
-              <option value="porcoes">🍟 Porções</option>
-              <option value="salgados">🥐 Salgadinhos</option>
-              <option value="doces">🍰 Doces</option>
-            </select>
+            <select id="edit-cat"></select>
           </div>
         </div>
         <div class="form-row">
@@ -1220,6 +1426,33 @@
     <div class="edit-actions">
       <button class="btn-cancel-edit" onclick="closeEditModal()">Cancelar</button>
       <button class="btn-salvar-edit" onclick="salvarEdicao()">💾 Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<!-- CARRINHO FLUTUANTE -->
+<button class="cart-fab" id="cartFab" onclick="openCartModal()">
+  <span class="cart-fab-badge" id="cartFabBadge">0</span>
+  🛒 Ver pedido
+  <span id="cartFabTotal">R$ 0,00</span>
+</button>
+
+<!-- MODAL CARRINHO -->
+<div class="cart-overlay" id="cartOverlay">
+  <div class="cart-sheet">
+    <div class="cart-header">
+      <h3>🛒 Seu pedido</h3>
+      <button class="btn-close-cart" onclick="closeCartModal()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItemsList"></div>
+    <div class="cart-footer" id="cartFooterArea">
+      <div class="cart-total-row">
+        <span class="cart-total-label">Total</span>
+        <span class="cart-total-value" id="cartTotalValue">R$ 0,00</span>
+      </div>
+      <button class="btn-finalizar-pedido" onclick="finalizarPedidoCarrinho()">📲 Finalizar pedido pelo WhatsApp</button>
+      <button class="btn-limpar-carrinho" id="btnLimparCarrinho" onclick="limparCarrinho()">🗑️ Esvaziar carrinho</button>
+      <div id="confirmaLimparArea" style="display:none;margin-top:8px;text-align:center;"></div>
     </div>
   </div>
 </div>
@@ -1313,13 +1546,260 @@
           <label>Texto do rodapé</label>
           <input type="text" id="cfg-footer" placeholder="Ex: Seg–Dom 17h às 23h">
         </div>
-        <div class="form-group">
-          <label>🎬 Vídeo do cabeçalho (YouTube ou link .mp4)</label>
-          <input type="text" id="cfg-hero-video" placeholder="Ex: https://youtube.com/watch?v=xxx ou link .mp4">
-          <small style="color:var(--muted);font-size:11px;margin-top:4px;">Cole o link do YouTube ou de um vídeo .mp4. Deixe em branco para remover.</small>
-        </div>
       </div>
       <button class="btn-add-item" onclick="salvarConfig()" style="margin-top:14px;">💾 Salvar configurações</button>
+    </div>
+
+    <!-- FONTE GERAL DO CARDÁPIO -->
+    <div class="admin-section">
+      <h3>🔤 Fonte geral do cardápio</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+        Controla a fonte dos nomes dos produtos, categorias, preços, descrições, botões e rodapé — tudo que não seja o título principal.
+      </p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fonte do corpo</label>
+          <select id="cfg-fonte-geral" onchange="previewFonteGeral()">
+            <option value="Inter">Inter (padrão — limpa e moderna)</option>
+            <option value="Raleway">Raleway (refinada)</option>
+            <option value="Poppins">Poppins (arredondada)</option>
+            <option value="Nunito">Nunito (suave e amigável)</option>
+            <option value="Montserrat">Montserrat (geométrica)</option>
+            <option value="Lato">Lato (humanista)</option>
+            <option value="Roboto">Roboto (neutra)</option>
+            <option value="Oswald">Oswald (condensada)</option>
+            <option value="Merriweather">Merriweather (serifada elegante)</option>
+          </select>
+        </div>
+      </div>
+      <div id="previewFonteGeralBox" style="display:none;margin-top:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
+        <div id="previewFonteGeralTexto" style="font-size:15px;line-height:1.7;color:var(--text);">
+          <strong>🍔 X-Burguer</strong><br>
+          <span style="font-size:13px;color:var(--muted);">Hambúrguer artesanal 150g, queijo, alface, tomate e maionese.</span><br>
+          <span style="font-size:19px;font-weight:700;color:var(--accent);">R$ 22,00</span>
+        </div>
+      </div>
+      <button class="btn-add-item" onclick="salvarFonteGeral()" style="margin-top:14px;">💾 Salvar fonte</button>
+    </div>
+
+    <!-- FUNDO DO CABEÇALHO COM PREVIEW -->
+    <div class="admin-section">
+      <h3>🖼️ Fundo e visual do cabeçalho</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+        Coloque uma imagem, vídeo ou várias imagens em slide atrás do nome, e personalize fonte, cor, contorno e posição. Veja o preview ao lado conforme edita.
+      </p>
+
+      <div class="edit-layout">
+        <div class="edit-form-col">
+
+          <div class="form-group">
+            <label>Modo de fundo</label>
+            <select id="cfg-hero-modo" onchange="toggleHeroModo();syncHeroPreview()">
+              <option value="unico">Imagem ou vídeo único</option>
+              <option value="slide">Slide com várias imagens</option>
+            </select>
+          </div>
+
+          <!-- MODO ÚNICO -->
+          <div id="heroModoUnico">
+            <div class="form-group" style="margin-top:10px;">
+              <label>URL da imagem, vídeo .mp4 ou link do YouTube</label>
+              <input type="text" id="cfg-hero-video" placeholder="Cole o link aqui" oninput="syncHeroPreview()">
+              <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block;">Deixe em branco para remover o fundo.</small>
+            </div>
+          </div>
+
+          <!-- MODO SLIDE -->
+          <div id="heroModoSlide" style="display:none;">
+            <div class="form-group" style="margin-top:10px;">
+              <label>Imagens do slide (uma URL por linha)</label>
+              <textarea id="cfg-hero-slides" placeholder="https://exemplo.com/imagem1.jpg&#10;https://exemplo.com/imagem2.jpg&#10;https://exemplo.com/imagem3.jpg" style="min-height:90px;" oninput="syncHeroPreview()"></textarea>
+              <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block;">Cole uma imagem por linha. Elas vão alternar em loop automaticamente.</small>
+            </div>
+            <div class="form-group">
+              <label>⏱️ Tempo de cada imagem (segundos)</label>
+              <input type="number" id="cfg-hero-slide-tempo" value="5" min="1" max="60" step="1">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:14px;">
+            <label>🔆 Opacidade da imagem de fundo</label>
+            <div class="img-ctrl-row">
+              <input type="range" id="cfg-hero-opacity" min="0" max="100" value="35" step="1" oninput="syncHeroPreview()">
+              <span class="img-ctrl-val" id="val-hero-opacity">35%</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:10px;">
+            <label>🌑 Escurecimento por cima da imagem</label>
+            <div class="img-ctrl-row">
+              <input type="range" id="cfg-hero-escuro" min="0" max="100" value="50" step="1" oninput="syncHeroPreview()">
+              <span class="img-ctrl-val" id="val-hero-escuro">50%</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:10px;">
+            <label>🔍 Zoom da imagem</label>
+            <div class="img-ctrl-row">
+              <input type="range" id="cfg-hero-zoom" min="100" max="250" value="100" step="1" oninput="syncHeroPreview()">
+              <span class="img-ctrl-val" id="val-hero-zoom">100%</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>↔️ Posição horizontal</label>
+              <div class="img-ctrl-row">
+                <input type="range" id="cfg-hero-pos-x" min="0" max="100" value="50" step="1" oninput="syncHeroPreview()">
+                <span class="img-ctrl-val" id="val-hero-pos-x">50%</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>↕️ Posição vertical</label>
+              <div class="img-ctrl-row">
+                <input type="range" id="cfg-hero-pos-y" min="0" max="100" value="50" step="1" oninput="syncHeroPreview()">
+                <span class="img-ctrl-val" id="val-hero-pos-y">50%</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border);margin:18px 0;padding-top:14px;">
+            <p style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:10px;">📝 NOME DO ESTABELECIMENTO</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label>🔤 Fonte</label>
+                <select id="cfg-titulo-fonte" onchange="syncHeroPreview()">
+                  <option value="Great Vibes">Great Vibes ✨ (similar à logo)</option>
+                  <option value="Dancing Script">Dancing Script (caligrafia elegante)</option>
+                  <option value="Playfair Display">Playfair Display (clássica)</option>
+                  <option value="Merriweather">Merriweather (elegante)</option>
+                  <option value="Montserrat">Montserrat (moderna)</option>
+                  <option value="Raleway">Raleway (refinada)</option>
+                  <option value="Poppins">Poppins (arredondada)</option>
+                  <option value="Nunito">Nunito (suave)</option>
+                  <option value="Bebas Neue">Bebas Neue (impacto)</option>
+                  <option value="Oswald">Oswald (condensada)</option>
+                  <option value="Pacifico">Pacifico (manuscrita)</option>
+                  <option value="Lobster">Lobster (retrô)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+              <label>📏 Tamanho da fonte</label>
+              <div class="img-ctrl-row">
+                <input type="range" id="cfg-titulo-tamanho" min="24" max="90" value="56" step="1" oninput="syncHeroPreview()">
+                <span class="img-ctrl-val" id="val-titulo-tamanho">56px</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>🎨 Cor (1ª palavra)</label>
+                <input type="color" id="cfg-titulo-cor" value="#f0ead8" oninput="syncHeroPreview()" style="height:44px;cursor:pointer;">
+              </div>
+              <div class="form-group">
+                <label>🎨 Cor de destaque</label>
+                <input type="color" id="cfg-titulo-cor-destaque" value="#e8a020" oninput="syncHeroPreview()" style="height:44px;cursor:pointer;">
+              </div>
+            </div>
+            <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;margin-top:10px;">
+              <input type="checkbox" id="cfg-titulo-contorno" style="width:18px;height:18px;accent-color:var(--accent)" oninput="syncHeroPreview()">
+              <label for="cfg-titulo-contorno" style="cursor:pointer;font-size:13px;">Adicionar contorno escuro (melhora a leitura)</label>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border);margin:18px 0;padding-top:14px;">
+            <p style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:10px;">📝 SLOGAN / DESCRIÇÃO</p>
+            <div class="form-group">
+              <label>📏 Tamanho da fonte</label>
+              <div class="img-ctrl-row">
+                <input type="range" id="cfg-slogan-tamanho" min="10" max="28" value="14" step="1" oninput="syncHeroPreview()">
+                <span class="img-ctrl-val" id="val-slogan-tamanho">14px</span>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+              <label>🎨 Cor do slogan</label>
+              <input type="color" id="cfg-slogan-cor" value="#8a7f6e" oninput="syncHeroPreview()" style="height:44px;cursor:pointer;">
+            </div>
+            <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;margin-top:10px;">
+              <input type="checkbox" id="cfg-slogan-contorno" style="width:18px;height:18px;accent-color:var(--accent)" oninput="syncHeroPreview()">
+              <label for="cfg-slogan-contorno" style="cursor:pointer;font-size:13px;">Adicionar contorno escuro (melhora a leitura)</label>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border);margin:18px 0;padding-top:14px;">
+            <p style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:10px;">🕒 BADGE DE HORÁRIO (Aberto/Fechado)</p>
+            <div class="form-group">
+              <label>📏 Tamanho da fonte</label>
+              <div class="img-ctrl-row">
+                <input type="range" id="cfg-status-tamanho" min="10" max="22" value="12" step="1" oninput="syncHeroPreview()">
+                <span class="img-ctrl-val" id="val-status-tamanho">12px</span>
+              </div>
+            </div>
+            <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;margin-top:10px;">
+              <input type="checkbox" id="cfg-status-contorno" style="width:18px;height:18px;accent-color:var(--accent)" oninput="syncHeroPreview()">
+              <label for="cfg-status-contorno" style="cursor:pointer;font-size:13px;">Adicionar contorno escuro (melhora a leitura)</label>
+            </div>
+          </div>
+
+          <button class="btn-add-item" onclick="salvarHeroBg()" style="margin-top:10px;">💾 Salvar fundo e visual do cabeçalho</button>
+        </div>
+
+        <div class="edit-preview-col">
+          <div class="edit-preview-label">👁️ Preview do cabeçalho</div>
+          <div style="position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:var(--bg);min-height:200px;display:flex;align-items:center;justify-content:center;">
+            <div id="heroPreviewBg" style="position:absolute;inset:0;overflow:hidden;"></div>
+            <div id="heroPreviewOverlay" style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(15,13,10,.5) 0%, rgba(15,13,10,.3) 50%, rgba(15,13,10,.7) 100%);display:none;"></div>
+            <div style="position:relative;z-index:2;text-align:center;padding:24px 16px;">
+              <div style="font-size:10px;letter-spacing:2px;color:var(--accent);margin-bottom:6px;">✦ CARDÁPIO DIGITAL ✦</div>
+              <div id="heroPreviewNome" style="font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:var(--text);">Meu Lugar</div>
+              <div id="heroPreviewSlogan" style="font-size:14px;color:var(--muted);margin-top:6px;">Lanches, bebidas & boas pedidas</div>
+              <div id="heroPreviewStatus" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:50px;margin-top:10px;background:rgba(76,175,80,.15);color:#4caf50;border:1px solid rgba(76,175,80,.3);">🟢 Aberto agora</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGEM PADRÃO DOS PRODUTOS -->
+    <div class="admin-section">
+      <h3>🍽️ Fundo padrão dos produtos</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+        Quando um produto não tiver foto própria, essa imagem aparece como fundo no lugar do emoji. Deixa o cardápio com cara mais profissional mesmo sem fotos de todos os itens ainda.
+      </p>
+
+      <div class="edit-layout">
+        <div class="edit-form-col">
+          <div class="form-group">
+            <label>URL da imagem padrão</label>
+            <input type="text" id="cfg-img-padrao" placeholder="Cole o link de uma imagem aqui" oninput="syncImgPadraoPreview()">
+            <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block;">Aparece em <strong>todos os produtos</strong>, com ou sem foto própria. A foto do produto fica por cima.</small>
+          </div>
+          <div class="form-group" style="margin-top:12px;">
+            <label>🔆 Opacidade do fundo (0% = invisível, 100% = total)</label>
+            <div class="img-ctrl-row">
+              <input type="range" id="cfg-img-padrao-opacity" min="0" max="100" value="50" step="1" oninput="syncImgPadraoPreview()">
+              <span class="img-ctrl-val" id="val-img-padrao-opacity">50%</span>
+            </div>
+          </div>
+          <button class="btn-add-item" onclick="salvarImgPadrao()" style="margin-top:10px;">💾 Salvar fundo padrão</button>
+        </div>
+
+        <div class="edit-preview-col">
+          <div class="edit-preview-label">👁️ Preview (aparece em todos os cards)</div>
+          <div class="preview-card">
+            <div class="preview-media" id="imgPadraoPreviewMedia">
+              <span style="font-size:48px;position:relative;z-index:1;">🍔</span>
+            </div>
+            <div class="preview-body">
+              <div class="preview-name">Produto exemplo</div>
+              <div class="preview-desc">O fundo aparece atrás de qualquer foto</div>
+              <div class="preview-footer">
+                <div class="preview-price">R$ 22,00</div>
+                <button class="preview-btn">🛒 Pedir</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- HORÁRIO DE FUNCIONAMENTO -->
@@ -1371,14 +1851,6 @@
           <label>Categoria *</label>
           <select id="add-cat">
             <option value="">Selecione...</option>
-            <option value="bebidas">🥤 Bebidas</option>
-            <option value="sucos">🍊 Sucos</option>
-            <option value="drinks">🍹 Drinks</option>
-            <option value="chopes">🍺 Chopes & Cervejas</option>
-            <option value="lanches">🍔 Lanches</option>
-            <option value="porcoes">🍟 Porções</option>
-            <option value="salgados">🥐 Salgadinhos</option>
-            <option value="doces">🍰 Doces</option>
           </select>
         </div>
       </div>
@@ -1415,6 +1887,33 @@
         </div>
       </div>
       <button class="btn-add-item" onclick="addItem()">➕ Adicionar ao cardápio</button>
+    </div>
+
+    <!-- GERENCIAR CATEGORIAS -->
+    <div class="admin-section">
+      <h3>🗂️ Categorias do cardápio</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+        Edite o nome e emoji das categorias, exclua as que não usa, ou crie novas.
+      </p>
+      <div class="item-list" id="adminCatList" style="margin-bottom:18px;"></div>
+
+      <div style="border-top:1px solid var(--border);padding-top:16px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome da nova categoria</label>
+            <input type="text" id="new-cat-nome" placeholder="Ex: Sobremesas Especiais">
+          </div>
+          <div class="form-group emoji-field">
+            <label>Emoji</label>
+            <div class="emoji-field-row">
+              <input type="text" id="new-cat-emoji" placeholder="Ex: 🍨">
+              <button type="button" class="btn-emoji-picker" onclick="toggleEmojiPicker('newcat-emoji-panel')">😀</button>
+            </div>
+            <div class="emoji-picker-panel" id="newcat-emoji-panel"></div>
+          </div>
+        </div>
+        <button class="btn-add-item" onclick="addCategoria()">➕ Criar categoria</button>
+      </div>
     </div>
 
     <!-- LISTA DE ITENS -->
@@ -1479,8 +1978,18 @@ function toggleEmojiPicker(panelId) {
 }
 
 function selectEmoji(panelId, emoji) {
-  const targetId = panelId === 'add-emoji-panel' ? 'add-emoji' : 'edit-emoji';
+  const map = {
+    'add-emoji-panel':    'add-emoji',
+    'edit-emoji-panel':   'edit-emoji',
+    'newcat-emoji-panel': 'new-cat-emoji',
+  };
+  let targetId = map[panelId];
+  // painéis dinâmicos de edição de categoria existente: "catedit-emoji-panel-<key>"
+  if(!targetId && panelId.startsWith('catedit-emoji-panel-')) {
+    targetId = panelId.replace('catedit-emoji-panel-', 'catedit-emoji-');
+  }
   const input = document.getElementById(targetId);
+  if(!input) return;
   input.value = emoji;
   input.dispatchEvent(new Event('input'));
   document.getElementById(panelId).classList.remove('open');
@@ -1493,7 +2002,7 @@ document.addEventListener('click', e => {
   }
 });
 
-const CATS = {
+const CATS_DEFAULT = {
   bebidas:  { label: 'Bebidas',          emoji: '🥤' },
   sucos:    { label: 'Sucos',            emoji: '🍊' },
   drinks:   { label: 'Drinks',           emoji: '🍹' },
@@ -1503,6 +2012,7 @@ const CATS = {
   salgados: { label: 'Salgadinhos',      emoji: '🥐' },
   doces:    { label: 'Doces',            emoji: '🍰' },
 };
+let CATS = {...CATS_DEFAULT}; // pode ser editado pelo admin e salvo na nuvem
 
 const DEFAULT_ITEMS = [
   { id:1,  nome:'Coca-Cola Gelada',        cat:'bebidas', preco:6,    emoji:'🥤', desc:'350ml bem gelada, direto da geladeira.',                                   media:'', destaque:false, disponivel:true },
@@ -1536,6 +2046,27 @@ const DEFAULT_CONFIG = {
   footer: 'Seg–Dom a partir das 17h',
   senha: '1234',
   heroVideo: '',
+  imagemPadraoProduto: '',
+  imagemPadraoOpacity: 50,
+  heroOpacity: 35,
+  heroEscuro: 50,
+  tituloFonte: 'Playfair Display',
+  tituloCor: '#f0ead8',
+  tituloCorDestaque: '#e8a020',
+  tituloTamanho: 56,
+  tituloContorno: false,
+  sloganTamanho: 14,
+  sloganCor: '#8a7f6e',
+  sloganContorno: false,
+  statusTamanho: 12,
+  statusContorno: false,
+  heroModo: 'unico', // 'unico' ou 'slide'
+  fonteGeral: 'Inter',
+  heroSlides: [],     // array de URLs para o modo slide
+  heroSlideTempo: 5,  // segundos por imagem
+  heroZoom: 100,
+  heroPosX: 50,
+  heroPosY: 50,
   horarioAtivo: false,
   diasFuncionamento: [0,1,2,3,4,5,6], // 0=domingo ... 6=sábado
   horaAbre: '17:00',
@@ -1596,6 +2127,7 @@ async function cloudLoad() {
       items = data.items;
     }
     if(data.config) config = {...DEFAULT_CONFIG, ...data.config};
+    if(data.cats && Object.keys(data.cats).length) CATS = data.cats;
     nextId = Math.max(...items.map(i=>i.id), 0) + 1;
     setStatus('✅ Sincronizado', 'ok');
     return true;
@@ -1611,6 +2143,7 @@ async function cloudSave() {
   if(!creds?.binId || !creds?.apiKey) {
     localStorage.setItem('cdp_items',  JSON.stringify(items));
     localStorage.setItem('cdp_config', JSON.stringify(config));
+    localStorage.setItem('cdp_cats',   JSON.stringify(CATS));
     return true;
   }
   try {
@@ -1621,7 +2154,7 @@ async function cloudSave() {
         'Content-Type': 'application/json',
         'X-Master-Key': creds.apiKey
       },
-      body: JSON.stringify({ items, config })
+      body: JSON.stringify({ items, config, cats: CATS })
     });
     if(!r.ok) {
       const txt = await r.text().catch(()=> '');
@@ -1634,6 +2167,7 @@ async function cloudSave() {
     setStatus('⚠️ Erro ao salvar na nuvem', 'err');
     localStorage.setItem('cdp_items',  JSON.stringify(items));
     localStorage.setItem('cdp_config', JSON.stringify(config));
+    localStorage.setItem('cdp_cats',   JSON.stringify(CATS));
     return false;
   }
 }
@@ -1643,13 +2177,16 @@ function localLoad() {
   try {
     const i = localStorage.getItem('cdp_items');
     const c = localStorage.getItem('cdp_config');
+    const ct = localStorage.getItem('cdp_cats');
     if(i) items  = JSON.parse(i);
     if(c) config = {...DEFAULT_CONFIG, ...JSON.parse(c)};
+    if(ct) { const parsed = JSON.parse(ct); if(Object.keys(parsed).length) CATS = parsed; }
     if(!items.length) items = DEFAULT_ITEMS.map(x=>({...x}));
     nextId = Math.max(...items.map(i=>i.id), 0) + 1;
   } catch(e) {
     items  = DEFAULT_ITEMS.map(x=>({...x}));
     config = {...DEFAULT_CONFIG};
+    CATS   = {...CATS_DEFAULT};
   }
 }
 
@@ -1727,6 +2264,8 @@ function isImage(url) {
 // ─────────────────────────────────────────────────────────
 // RENDER
 // ─────────────────────────────────────────────────────────
+let heroSlideInterval = null;
+
 function applyConfig() {
   document.title = config.nome + ' — Cardápio';
   document.getElementById('nome-estabelecimento').innerHTML =
@@ -1736,25 +2275,93 @@ function applyConfig() {
   const wppNum = (config.wpp||'').replace(/\D/g,'');
   document.getElementById('wpp-footer').href = `https://wa.me/${wppNum}`;
 
-  // Hero background video
+  const root = document.documentElement.style;
+
+  // Fonte geral do cardápio (body)
+  root.setProperty('--fonte-geral', `'${config.fonteGeral || 'Inter'}'`);
+
+  // Título: fonte, cor, tamanho, contorno
+  root.setProperty('--titulo-fonte', `'${config.tituloFonte || 'Playfair Display'}'`);
+  root.setProperty('--titulo-cor', config.tituloCor || '#f0ead8');
+  root.setProperty('--titulo-cor-destaque', config.tituloCorDestaque || '#e8a020');
+  const tituloTam = config.tituloTamanho || 56;
+  root.setProperty('--titulo-tamanho', `clamp(28px, ${tituloTam/16}vw, ${tituloTam}px)`);
+  root.setProperty('--titulo-contorno', config.tituloContorno ? '0 0 6px rgba(0,0,0,.9), 0 0 12px rgba(0,0,0,.7), 1px 1px 2px rgba(0,0,0,1)' : 'none');
+
+  // Slogan: tamanho, cor, contorno
+  root.setProperty('--slogan-tamanho', (config.sloganTamanho || 14) + 'px');
+  root.setProperty('--slogan-cor', config.sloganCor || '#8a7f6e');
+  root.setProperty('--slogan-contorno', config.sloganContorno ? '0 0 6px rgba(0,0,0,.9), 0 0 12px rgba(0,0,0,.7), 1px 1px 2px rgba(0,0,0,1)' : 'none');
+
+  // Status (badge aberto/fechado): tamanho, contorno
+  root.setProperty('--status-tamanho', (config.statusTamanho || 12) + 'px');
+  root.setProperty('--status-contorno', config.statusContorno ? '0 0 6px rgba(0,0,0,.9), 0 0 10px rgba(0,0,0,.6)' : 'none');
+
+  // Opacidade, escurecimento, zoom, posição da imagem de fundo
+  const opacidade = (config.heroOpacity !== undefined ? config.heroOpacity : 35) / 100;
+  const escuro    = (config.heroEscuro  !== undefined ? config.heroEscuro  : 50) / 100;
+  const zoom      = (config.heroZoom !== undefined ? config.heroZoom : 100) / 100;
+  root.setProperty('--hero-bg-opacity', opacidade);
+  root.setProperty('--hero-overlay-top', escuro);
+  root.setProperty('--hero-overlay-mid', escuro * 0.6);
+  root.setProperty('--hero-overlay-bottom', Math.min(escuro * 1.4, 1));
+  root.setProperty('--hero-bg-zoom', zoom);
+  root.setProperty('--hero-bg-pos-x', (config.heroPosX !== undefined ? config.heroPosX : 50) + '%');
+  root.setProperty('--hero-bg-pos-y', (config.heroPosY !== undefined ? config.heroPosY : 50) + '%');
+
+  // Hero background: modo único (vídeo/YouTube/imagem) ou slide de várias imagens
   const heroBg = document.getElementById('heroBg');
   const heroOverlay = document.getElementById('heroOverlay');
-  const url = config.heroVideo || '';
   heroBg.innerHTML = '';
-  if(url) {
+  heroBg.className = '';
+  if(heroSlideInterval) { clearInterval(heroSlideInterval); heroSlideInterval = null; }
+
+  const modo = config.heroModo || 'unico';
+
+  if(modo === 'slide' && Array.isArray(config.heroSlides) && config.heroSlides.length) {
     heroOverlay.style.display = '';
-    const ytId = getYouTubeId(url);
-    if(ytId) {
-      heroBg.className = 'hero-video-bg';
-      heroBg.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1" allow="autoplay" frameborder="0"></iframe>`;
-    } else if(isVideoFile(url)) {
-      const v = document.createElement('video');
-      v.src = url; v.autoplay = true; v.muted = true; v.loop = true; v.playsInline = true;
-      v.className = 'hero-video-bg';
-      heroBg.appendChild(v);
+    config.heroSlides.forEach((url, idx) => {
+      const img = document.createElement('img');
+      img.src = url;
+      img.className = 'hero-slide-img' + (idx === 0 ? ' active' : '');
+      img.dataset.idx = idx;
+      img.onerror = () => img.remove();
+      heroBg.appendChild(img);
+    });
+    if(config.heroSlides.length > 1) {
+      let atual = 0;
+      const tempoMs = (config.heroSlideTempo || 5) * 1000;
+      heroSlideInterval = setInterval(() => {
+        const imgs = heroBg.querySelectorAll('.hero-slide-img');
+        if(!imgs.length) return;
+        imgs[atual].classList.remove('active');
+        atual = (atual + 1) % imgs.length;
+        imgs[atual].classList.add('active');
+      }, tempoMs);
     }
   } else {
-    heroOverlay.style.display = 'none';
+    const url = config.heroVideo || '';
+    if(url) {
+      heroOverlay.style.display = '';
+      const ytId = getYouTubeId(url);
+      if(ytId) {
+        heroBg.className = 'hero-video-bg';
+        heroBg.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1" allow="autoplay" frameborder="0"></iframe>`;
+      } else if(isVideoFile(url)) {
+        const v = document.createElement('video');
+        v.src = url; v.autoplay = true; v.muted = true; v.loop = true; v.playsInline = true;
+        v.className = 'hero-video-bg';
+        heroBg.appendChild(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'hero-video-bg';
+        img.onerror = () => { heroBg.innerHTML = ''; heroOverlay.style.display = 'none'; };
+        heroBg.appendChild(img);
+      }
+    } else {
+      heroOverlay.style.display = 'none';
+    }
   }
 
   renderStatusFuncionamento();
@@ -1898,28 +2505,40 @@ function makeCard(item) {
   const ytId    = getYouTubeId(item.media);
   const isVid   = isVideoFile(item.media);
   const hasMedia = !!item.media;
-  let mediaHTML = '';
 
+  // ── Fundo padrão: SEMPRE atrás, z-index 0 ──
+  const fundoPadraoHTML = config.imagemPadraoProduto
+    ? `<img src="${config.imagemPadraoProduto}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:${(config.imagemPadraoOpacity||50)/100};z-index:0;" onerror="this.style.display='none'">`
+    : '';
+
+  // ── Mídia do produto (foto/vídeo): z-index 1, só se tiver ──
+  let mediaHTML = '';
   if(ytId) {
     mediaHTML = `
-      <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1" allow="autoplay" frameborder="0"></iframe>
-      <div class="card-yt-badge">▶ YouTube</div>`;
+      <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1" allow="autoplay" frameborder="0" style="position:absolute;inset:0;width:100%;height:100%;border:none;z-index:1;"></iframe>
+      <div class="card-yt-badge" style="z-index:2;">▶ YouTube</div>`;
   } else if(isVid) {
-    mediaHTML = `<video src="${item.media}" muted loop autoplay playsinline style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"></video>`;
+    mediaHTML = `<video src="${item.media}" muted loop autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;"></video>`;
   } else if(hasMedia) {
     const scale = (item.imgZoom||100) / 100;
     const x = item.imgX || 0;
     const y = item.imgY || 0;
-    const ts = `transform:scale(${scale}) translate(${x*0.5}%,${y*0.5}%);transform-origin:center center;object-fit:contain;width:100%;height:100%;`;
-    mediaHTML = `<img src="${item.media}" alt="${item.nome}" style="${ts}"
-      onload="this.nextElementSibling.style.display='none'"
-      onerror="this.style.display='none';this.nextElementSibling.style.display=''">`;
+    mediaHTML = `<img src="${item.media}" alt="${item.nome}"
+      style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:scale(${scale}) translate(${x*0.5}%,${y*0.5}%);transform-origin:center center;z-index:1;"
+      onerror="this.style.display='none';this.parentElement.querySelector('.emoji-placeholder').style.display=''">`;
   }
+
+  // ── Emoji: z-index 2, some quando tem foto/vídeo ──
+  const emojiVisivel = !hasMedia; // só aparece se não tiver mídia própria
+  const emojiHTML = `<span class="emoji-placeholder" style="position:relative;z-index:2;${emojiVisivel ? '' : 'display:none;'}">${item.emoji||'🍽️'}</span>`;
+
+  const qtd = getQtdCarrinho(item.id);
 
   card.innerHTML = `
     <div class="card-media">
+      ${fundoPadraoHTML}
       ${mediaHTML}
-      <span class="emoji-placeholder" style="${hasMedia && !isImage(item.media) ? 'display:none' : ''}">${item.emoji||'🍽️'}</span>
+      ${emojiHTML}
     </div>
     ${item.destaque ? '<div class="badge-destaque">⭐ Destaque</div>' : ''}
     <div class="card-body">
@@ -1927,10 +2546,180 @@ function makeCard(item) {
       <div class="card-desc">${item.desc || '&nbsp;'}</div>
       <div class="card-footer">
         <div class="card-price"><span class="cifrao">R$</span>${item.preco.toFixed(2).replace('.',',')}</div>
-        <button class="btn-pedir" onclick="event.stopPropagation();pedirWpp('${item.nome}',${item.preco})">📲 Pedir</button>
+        <div class="card-qty-area" data-item-id="${item.id}"></div>
       </div>
     </div>`;
+
+  const qtyArea = card.querySelector('.card-qty-area');
+  renderQtyArea(qtyArea, item);
+
   return card;
+}
+
+function renderQtyArea(container, item) {
+  const qtd = getQtdCarrinho(item.id);
+  container.innerHTML = '';
+  if(qtd === 0) {
+    const btn = document.createElement('button');
+    btn.className = 'btn-add-cart';
+    btn.innerHTML = '🛒 Pedir';
+    btn.onclick = (e) => { e.stopPropagation(); addAoCarrinho(item); renderQtyArea(container, item); };
+    container.appendChild(btn);
+  } else {
+    const wrap = document.createElement('div');
+    wrap.className = 'qty-controls';
+    wrap.onclick = e => e.stopPropagation();
+    wrap.innerHTML = `
+      <button class="qty-btn" data-act="menos">−</button>
+      <span class="qty-val">${qtd}</span>
+      <button class="qty-btn" data-act="mais">+</button>`;
+    wrap.querySelector('[data-act="menos"]').onclick = () => { removerDoCarrinho(item.id); renderQtyArea(container, item); };
+    wrap.querySelector('[data-act="mais"]').onclick = () => { addAoCarrinho(item); renderQtyArea(container, item); };
+    container.appendChild(wrap);
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// GERENCIAR CATEGORIAS
+// ─────────────────────────────────────────────────────────
+function slugify(texto) {
+  return texto
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 30) || ('cat_' + Date.now());
+}
+
+function popularSelectsCategoria() {
+  ['add-cat', 'edit-cat'].forEach(selId => {
+    const sel = document.getElementById(selId);
+    const valorAtual = sel.value;
+    const temPlaceholder = selId === 'add-cat';
+    sel.innerHTML = temPlaceholder ? '<option value="">Selecione...</option>' : '';
+    Object.entries(CATS).forEach(([key, c]) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = `${c.emoji} ${c.label}`;
+      sel.appendChild(opt);
+    });
+    if(valorAtual && CATS[valorAtual]) sel.value = valorAtual;
+  });
+}
+
+function renderCatAdminList() {
+  const el = document.getElementById('adminCatList');
+  el.innerHTML = '';
+  const keys = Object.keys(CATS);
+  if(!keys.length) { el.innerHTML = '<p style="color:var(--muted);font-size:14px;">Nenhuma categoria ainda.</p>'; return; }
+
+  keys.forEach(key => {
+    const cat = CATS[key];
+    const qtdItens = items.filter(i => i.cat === key).length;
+
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.style.flexWrap = 'wrap';
+    row.innerHTML = `
+      <div class="item-row-info">
+        <div class="item-row-name">${cat.emoji} ${cat.label}</div>
+        <div class="item-row-cat">${qtdItens} item(ns) nessa categoria</div>
+      </div>
+      <div class="item-row-actions">
+        <button class="btn-edit" title="Editar" data-act="edit">✏️</button>
+        <button class="btn-del" title="Excluir" data-act="del">🗑️</button>
+      </div>
+      <div class="cat-edit-form" style="display:none;width:100%;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);"></div>`;
+
+    row.querySelector('[data-act="edit"]').onclick = () => toggleCatEditForm(row, key, cat);
+    row.querySelector('[data-act="del"]').onclick = () => excluirCategoria(key, qtdItens);
+
+    el.appendChild(row);
+  });
+}
+
+function toggleCatEditForm(row, key, cat) {
+  const form = row.querySelector('.cat-edit-form');
+  const isOpen = form.style.display !== 'none';
+  // fecha outros formulários abertos
+  document.querySelectorAll('.cat-edit-form').forEach(f => f.style.display = 'none');
+  if(isOpen) return;
+
+  const emojiInputId = `catedit-emoji-${key}`;
+  const panelId = `catedit-emoji-panel-${key}`;
+
+  form.innerHTML = `
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" id="catedit-nome-${key}" value="${cat.label}">
+      </div>
+      <div class="form-group emoji-field">
+        <label>Emoji</label>
+        <div class="emoji-field-row">
+          <input type="text" id="${emojiInputId}" value="${cat.emoji}">
+          <button type="button" class="btn-emoji-picker" onclick="toggleEmojiPicker('${panelId}')">😀</button>
+        </div>
+        <div class="emoji-picker-panel" id="${panelId}"></div>
+      </div>
+    </div>
+    <button class="btn-add-item" data-act="save" style="margin-top:4px;">💾 Salvar categoria</button>`;
+
+  form.querySelector('[data-act="save"]').onclick = () => salvarEdicaoCategoria(key);
+  form.style.display = 'block';
+}
+
+function salvarEdicaoCategoria(key) {
+  const novoNome  = document.getElementById(`catedit-nome-${key}`).value.trim();
+  const novoEmoji = document.getElementById(`catedit-emoji-${key}`).value.trim();
+  if(!novoNome) { alert('Digite um nome para a categoria.'); return; }
+
+  CATS[key] = { label: novoNome, emoji: novoEmoji || CATS[key].emoji };
+  cloudSave();
+  popularSelectsCategoria();
+  renderCatAdminList();
+  renderCats();
+  renderCards();
+  renderAdminList();
+  alert('✅ Categoria atualizada!');
+}
+
+function excluirCategoria(key, qtdItens) {
+  if(qtdItens > 0) {
+    alert(`⚠️ Não é possível excluir essa categoria porque ela tem ${qtdItens} item(ns) cadastrado(s).\n\nMude esses itens para outra categoria primeiro (editando cada um), ou exclua os itens.`);
+    return;
+  }
+  if(!confirm(`Excluir a categoria "${CATS[key].label}"?`)) return;
+  delete CATS[key];
+  cloudSave();
+  popularSelectsCategoria();
+  renderCatAdminList();
+  renderCats();
+  renderCards();
+}
+
+function addCategoria() {
+  const nome  = document.getElementById('new-cat-nome').value.trim();
+  const emoji = document.getElementById('new-cat-emoji').value.trim() || '🍽️';
+  if(!nome) { alert('Digite o nome da nova categoria.'); return; }
+
+  let key = slugify(nome);
+  // evita colisão de chave
+  let i = 2;
+  const baseKey = key;
+  while(CATS[key]) { key = `${baseKey}_${i}`; i++; }
+
+  CATS[key] = { label: nome, emoji };
+  cloudSave();
+
+  document.getElementById('new-cat-nome').value = '';
+  document.getElementById('new-cat-emoji').value = '';
+
+  popularSelectsCategoria();
+  renderCatAdminList();
+  renderCats();
+  renderCards();
+  alert(`✅ Categoria "${nome}" criada!`);
 }
 
 function renderAdminList() {
@@ -1962,16 +2751,27 @@ function openModal(item) {
   document.getElementById('modalName').textContent  = item.nome;
   document.getElementById('modalDesc').textContent  = item.desc || '';
   document.getElementById('modalPrice').textContent = 'R$ ' + item.preco.toFixed(2).replace('.',',');
-  document.getElementById('modalEmoji').textContent = item.emoji || '🍽️';
-  document.getElementById('modalEmoji').style.display = item.media ? 'none' : '';
+  const modalEmoji = document.getElementById('modalEmoji');
+  modalEmoji.textContent = item.emoji || '🍽️';
+  // emoji some só se tiver mídia VÁLIDA — fica visível se não tiver mídia
+  modalEmoji.style.display = item.media ? 'none' : '';
 
   const media = document.getElementById('modalMedia');
   media.querySelectorAll('img,video,iframe').forEach(el=>el.remove());
 
+  // fundo padrão SEMPRE atrás (z-index 0)
+  if(config.imagemPadraoProduto) {
+    const bg = document.createElement('img');
+    bg.src = config.imagemPadraoProduto;
+    bg.style.cssText = `position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:${(config.imagemPadraoOpacity||50)/100};z-index:0;`;
+    bg.onerror = () => bg.remove();
+    media.appendChild(bg);
+  }
+
   if(item.media) {
     const ytId  = getYouTubeId(item.media);
     const isVid = isVideoFile(item.media);
-    const s     = 'position:absolute;top:0;left:0;width:100%;height:100%;';
+    const s     = 'position:absolute;inset:0;width:100%;height:100%;z-index:1;';
 
     if(ytId) {
       const ifr = document.createElement('iframe');
@@ -1987,13 +2787,14 @@ function openModal(item) {
     } else {
       const img = document.createElement('img');
       img.src = item.media;
-      img.onerror = () => { img.style.display='none'; document.getElementById('modalEmoji').style.display=''; };
+      // se imagem falhar, mostra o emoji
+      img.onerror = () => { img.remove(); modalEmoji.style.display = ''; };
       img.style.cssText = s + 'object-fit:contain;';
       media.appendChild(img);
     }
   }
 
-  document.getElementById('modalWpp').onclick = () => pedirWpp(item.nome, item.preco);
+  document.getElementById('modalWpp').onclick = () => { addAoCarrinho(item); closeModal(); openCartModal(); };
   document.getElementById('itemModal').classList.add('open');
 }
 function closeModal() {
@@ -2005,7 +2806,170 @@ document.getElementById('itemModal').onclick = e => { if(e.target===e.currentTar
 // ─────────────────────────────────────────────────────────
 // WHATSAPP
 // ─────────────────────────────────────────────────────────
-let pedidoPendente = null; // { tipo: 'item'|'footer', nome, preco }
+// ─────────────────────────────────────────────────────────
+// CARRINHO DE COMPRAS
+// ─────────────────────────────────────────────────────────
+let carrinho = []; // [{id, nome, preco, qtd}]
+
+function getQtdCarrinho(itemId) {
+  const c = carrinho.find(c => c.id === itemId);
+  return c ? c.qtd : 0;
+}
+
+function addAoCarrinho(item) {
+  const existente = carrinho.find(c => c.id === item.id);
+  if(existente) {
+    existente.qtd++;
+  } else {
+    carrinho.push({ id: item.id, nome: item.nome, preco: item.preco, qtd: 1 });
+  }
+  atualizarCartFab();
+}
+
+function removerDoCarrinho(itemId) {
+  const existente = carrinho.find(c => c.id === itemId);
+  if(!existente) return;
+  existente.qtd--;
+  if(existente.qtd <= 0) {
+    carrinho = carrinho.filter(c => c.id !== itemId);
+  }
+  atualizarCartFab();
+}
+
+function removerItemCompleto(itemId) {
+  carrinho = carrinho.filter(c => c.id !== itemId);
+  atualizarCartFab();
+  renderCartModal();
+  // atualiza o card na grade, se visível
+  const area = document.querySelector(`.card-qty-area[data-item-id="${itemId}"]`);
+  if(area) {
+    const item = items.find(i => i.id === itemId);
+    if(item) renderQtyArea(area, item);
+  }
+}
+
+function getTotalCarrinho() {
+  return carrinho.reduce((sum, c) => sum + (c.preco * c.qtd), 0);
+}
+
+function getQtdTotalCarrinho() {
+  return carrinho.reduce((sum, c) => sum + c.qtd, 0);
+}
+
+function atualizarCartFab() {
+  const fab = document.getElementById('cartFab');
+  const qtdTotal = getQtdTotalCarrinho();
+  if(qtdTotal === 0) {
+    fab.classList.remove('show');
+    return;
+  }
+  fab.classList.add('show');
+  document.getElementById('cartFabBadge').textContent = qtdTotal;
+  document.getElementById('cartFabTotal').textContent = 'R$ ' + getTotalCarrinho().toFixed(2).replace('.',',');
+}
+
+function openCartModal() {
+  renderCartModal();
+  document.getElementById('cartOverlay').classList.add('open');
+}
+
+function closeCartModal() {
+  document.getElementById('cartOverlay').classList.remove('open');
+}
+
+function renderCartModal() {
+  const container = document.getElementById('cartItemsList');
+  const footer = document.getElementById('cartFooterArea');
+
+  // sempre reseta a área de confirmação ao re-renderizar
+  const confirmaArea = document.getElementById('confirmaLimparArea');
+  const btnLimpar = document.getElementById('btnLimparCarrinho');
+  if(confirmaArea) { confirmaArea.style.display = 'none'; confirmaArea.innerHTML = ''; }
+  if(btnLimpar) btnLimpar.style.display = '';
+
+  if(!carrinho.length) {
+    container.innerHTML = `<div class="cart-empty">🛒<br><br>Seu carrinho está vazio.<br>Adicione itens do cardápio!</div>`;
+    footer.style.display = 'none';
+    return;
+  }
+
+  footer.style.display = 'block';
+  container.innerHTML = '';
+
+  carrinho.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'cart-item-row';
+    row.innerHTML = `
+      <div class="cart-item-info">
+        <div class="cart-item-name">${c.qtd}x ${c.nome}</div>
+        <div class="cart-item-price">R$ ${(c.preco * c.qtd).toFixed(2).replace('.',',')}</div>
+      </div>
+      <div class="qty-controls">
+        <button class="qty-btn" data-act="menos">−</button>
+        <span class="qty-val">${c.qtd}</span>
+        <button class="qty-btn" data-act="mais">+</button>
+      </div>`;
+    row.querySelector('[data-act="menos"]').onclick = () => {
+      const item = items.find(i=>i.id===c.id);
+      removerDoCarrinho(c.id);
+      renderCartModal();
+      const area = document.querySelector(`.card-qty-area[data-item-id="${c.id}"]`);
+      if(area && item) renderQtyArea(area, item);
+    };
+    row.querySelector('[data-act="mais"]').onclick = () => {
+      const item = items.find(i=>i.id===c.id);
+      if(item) { addAoCarrinho(item); renderCartModal(); }
+      const area = document.querySelector(`.card-qty-area[data-item-id="${c.id}"]`);
+      if(area && item) renderQtyArea(area, item);
+    };
+    container.appendChild(row);
+  });
+
+  document.getElementById('cartTotalValue').textContent = 'R$ ' + getTotalCarrinho().toFixed(2).replace('.',',');
+}
+
+function limparCarrinho() {
+  if(!carrinho.length) return;
+
+  // mostra confirmação inline dentro do próprio painel (mais confiável em mobile do que confirm())
+  document.getElementById('btnLimparCarrinho').style.display = 'none';
+  const area = document.getElementById('confirmaLimparArea');
+  area.style.display = 'block';
+  area.innerHTML = `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Esvaziar o carrinho inteiro?</p>
+    <div style="display:flex;gap:10px;">
+      <button id="btnCancelaLimpar" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:50px;color:var(--text);font-size:13px;cursor:pointer;">Cancelar</button>
+      <button id="btnConfirmaLimpar" style="flex:1;padding:10px;background:var(--accent2);border:none;border-radius:50px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Sim, esvaziar</button>
+    </div>`;
+
+  document.getElementById('btnCancelaLimpar').onclick = () => {
+    area.style.display = 'none';
+    area.innerHTML = '';
+    document.getElementById('btnLimparCarrinho').style.display = '';
+  };
+
+  document.getElementById('btnConfirmaLimpar').onclick = () => {
+    carrinho = [];
+    atualizarCartFab();
+    renderCartModal();
+    renderCards();
+  };
+}
+
+function finalizarPedidoCarrinho() {
+  if(!carrinho.length) return;
+
+  if(config.horarioAtivo && !estaAberto()) {
+    alert('🔴 ' + (config.msgFechado || DEFAULT_CONFIG.msgFechado) + `\n\nHorário: ${config.horaAbre} às ${config.horaFecha}`);
+    return;
+  }
+
+  closeCartModal();
+  pedidoPendente = { tipo: 'carrinho' };
+  openNomeModal();
+}
+
+
 
 function checkAbertoFooter(e) {
   e.preventDefault();
@@ -2013,8 +2977,12 @@ function checkAbertoFooter(e) {
     alert('🔴 ' + (config.msgFechado || DEFAULT_CONFIG.msgFechado) + `\n\nHorário: ${config.horaAbre} às ${config.horaFecha}`);
     return false;
   }
-  pedidoPendente = { tipo: 'footer' };
-  openNomeModal();
+  if(carrinho.length) {
+    openCartModal();
+  } else {
+    pedidoPendente = { tipo: 'footer' };
+    openNomeModal();
+  }
   return false;
 }
 
@@ -2048,7 +3016,11 @@ function confirmarNomeCliente() {
   const wpp = (config.wpp||'').replace(/\D/g,'');
   let texto;
 
-  if(pedidoPendente?.tipo === 'item') {
+  if(pedidoPendente?.tipo === 'carrinho') {
+    const linhas = carrinho.map(c => `• ${c.qtd}x ${c.nome} — R$ ${(c.preco * c.qtd).toFixed(2).replace('.',',')}`).join('\n');
+    const total = getTotalCarrinho().toFixed(2).replace('.',',');
+    texto = `Olá! Meu nome é *${nomeCliente}*.\nMeu pedido:\n${linhas}\n\n*Total: R$ ${total}*`;
+  } else if(pedidoPendente?.tipo === 'item') {
     texto = `Olá! Meu nome é *${nomeCliente}*.\nQuero pedir: *${pedidoPendente.nome}* — R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}`;
   } else {
     texto = `Olá! Meu nome é *${nomeCliente}*. Gostaria de fazer um pedido.`;
@@ -2058,10 +3030,19 @@ function confirmarNomeCliente() {
   window.open(`https://wa.me/${wpp}?text=${msg}`, '_blank');
 
   document.getElementById('nomeOverlay').classList.remove('open');
+
+  // se foi pedido do carrinho, esvazia depois de enviar
+  if(pedidoPendente?.tipo === 'carrinho') {
+    carrinho = [];
+    atualizarCartFab();
+    renderCards();
+  }
+
   pedidoPendente = null;
 }
 
 document.getElementById('nomeOverlay').onclick = e => { if(e.target===e.currentTarget) closeNomeModal(); };
+document.getElementById('cartOverlay').onclick = e => { if(e.target===e.currentTarget) closeCartModal(); };
 
 // ─────────────────────────────────────────────────────────
 // SEARCH
@@ -2129,7 +3110,37 @@ async function openAdminPanel() {
   document.getElementById('cfg-slogan').value     = config.slogan;
   document.getElementById('cfg-wpp').value        = config.wpp||'';
   document.getElementById('cfg-footer').value     = config.footer;
+  document.getElementById('cfg-fonte-geral').value = config.fonteGeral || 'Inter';
+  document.getElementById('cfg-hero-modo').value  = config.heroModo || 'unico';
   document.getElementById('cfg-hero-video').value = config.heroVideo||'';
+  document.getElementById('cfg-hero-slides').value = (config.heroSlides||[]).join('\n');
+  document.getElementById('cfg-hero-slide-tempo').value = config.heroSlideTempo || 5;
+  toggleHeroModo();
+
+  document.getElementById('cfg-hero-opacity').value = config.heroOpacity !== undefined ? config.heroOpacity : 35;
+  document.getElementById('cfg-hero-escuro').value  = config.heroEscuro  !== undefined ? config.heroEscuro  : 50;
+  document.getElementById('cfg-hero-zoom').value    = config.heroZoom !== undefined ? config.heroZoom : 100;
+  document.getElementById('cfg-hero-pos-x').value   = config.heroPosX !== undefined ? config.heroPosX : 50;
+  document.getElementById('cfg-hero-pos-y').value   = config.heroPosY !== undefined ? config.heroPosY : 50;
+
+  document.getElementById('cfg-titulo-fonte').value = config.tituloFonte || 'Playfair Display';
+  document.getElementById('cfg-titulo-cor').value   = config.tituloCor   || '#f0ead8';
+  document.getElementById('cfg-titulo-cor-destaque').value = config.tituloCorDestaque || '#e8a020';
+  document.getElementById('cfg-titulo-tamanho').value = config.tituloTamanho || 56;
+  document.getElementById('cfg-titulo-contorno').checked = !!config.tituloContorno;
+
+  document.getElementById('cfg-slogan-tamanho').value = config.sloganTamanho || 14;
+  document.getElementById('cfg-slogan-cor').value = config.sloganCor || '#8a7f6e';
+  document.getElementById('cfg-slogan-contorno').checked = !!config.sloganContorno;
+
+  document.getElementById('cfg-status-tamanho').value = config.statusTamanho || 12;
+  document.getElementById('cfg-status-contorno').checked = !!config.statusContorno;
+
+  syncHeroPreview();
+
+  document.getElementById('cfg-img-padrao').value = config.imagemPadraoProduto||'';
+  document.getElementById('cfg-img-padrao-opacity').value = config.imagemPadraoOpacity !== undefined ? config.imagemPadraoOpacity : 50;
+  syncImgPadraoPreview();
 
   document.getElementById('cfg-horario-ativo').checked = !!config.horarioAtivo;
   document.getElementById('cfg-hora-abre').value  = config.horaAbre  || '17:00';
@@ -2137,6 +3148,8 @@ async function openAdminPanel() {
   document.getElementById('cfg-msg-fechado').value = config.msgFechado || DEFAULT_CONFIG.msgFechado;
   renderDiasSemana();
 
+  popularSelectsCategoria();
+  renderCatAdminList();
   renderAdminList();
   document.getElementById('adminOverlay').classList.add('open');
 }
@@ -2152,10 +3165,189 @@ function salvarConfig() {
   config.slogan    = document.getElementById('cfg-slogan').value || config.slogan;
   config.wpp       = document.getElementById('cfg-wpp').value    || config.wpp;
   config.footer    = document.getElementById('cfg-footer').value || config.footer;
-  config.heroVideo = document.getElementById('cfg-hero-video').value.trim();
   cloudSave();
   applyConfig();
   alert('✅ Configurações salvas!');
+}
+
+// ─────────────────────────────────────────────────────────
+// FUNDO DO CABEÇALHO — PREVIEW AO VIVO
+// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// FONTE GERAL DO CARDÁPIO
+// ─────────────────────────────────────────────────────────
+function previewFonteGeral() {
+  const fonte = document.getElementById('cfg-fonte-geral').value;
+  const box = document.getElementById('previewFonteGeralBox');
+  const texto = document.getElementById('previewFonteGeralTexto');
+  box.style.display = 'block';
+  texto.style.fontFamily = `'${fonte}', sans-serif`;
+}
+
+function salvarFonteGeral() {
+  config.fonteGeral = document.getElementById('cfg-fonte-geral').value;
+  cloudSave();
+  document.documentElement.style.setProperty('--fonte-geral', `'${config.fonteGeral}'`);
+  alert(`✅ Fonte "${config.fonteGeral}" aplicada em todo o cardápio!`);
+}
+
+function toggleHeroModo() {
+  const modo = document.getElementById('cfg-hero-modo').value;
+  document.getElementById('heroModoUnico').style.display = modo === 'unico' ? 'block' : 'none';
+  document.getElementById('heroModoSlide').style.display = modo === 'slide' ? 'block' : 'none';
+}
+
+function syncHeroPreview() {
+  const modo = document.getElementById('cfg-hero-modo').value;
+  const bg = document.getElementById('heroPreviewBg');
+  const overlay = document.getElementById('heroPreviewOverlay');
+  const nomeEl = document.getElementById('heroPreviewNome');
+  const sloganEl = document.getElementById('heroPreviewSlogan');
+  const statusEl = document.getElementById('heroPreviewStatus');
+
+  const opacidade = parseInt(document.getElementById('cfg-hero-opacity').value) / 100;
+  const escuro    = parseInt(document.getElementById('cfg-hero-escuro').value) / 100;
+  const zoom      = parseInt(document.getElementById('cfg-hero-zoom').value) / 100;
+  const posX      = document.getElementById('cfg-hero-pos-x').value;
+  const posY      = document.getElementById('cfg-hero-pos-y').value;
+
+  const fonte       = document.getElementById('cfg-titulo-fonte').value;
+  const cor         = document.getElementById('cfg-titulo-cor').value;
+  const corDest     = document.getElementById('cfg-titulo-cor-destaque').value;
+  const tituloTam   = document.getElementById('cfg-titulo-tamanho').value;
+  const tituloCont  = document.getElementById('cfg-titulo-contorno').checked;
+
+  const sloganTam   = document.getElementById('cfg-slogan-tamanho').value;
+  const sloganCor   = document.getElementById('cfg-slogan-cor').value;
+  const sloganCont  = document.getElementById('cfg-slogan-contorno').checked;
+
+  const statusTam   = document.getElementById('cfg-status-tamanho').value;
+  const statusCont  = document.getElementById('cfg-status-contorno').checked;
+
+  document.getElementById('val-hero-opacity').textContent = Math.round(opacidade*100) + '%';
+  document.getElementById('val-hero-escuro').textContent  = Math.round(escuro*100) + '%';
+  document.getElementById('val-hero-zoom').textContent    = Math.round(zoom*100) + '%';
+  document.getElementById('val-hero-pos-x').textContent   = posX + '%';
+  document.getElementById('val-hero-pos-y').textContent   = posY + '%';
+  document.getElementById('val-titulo-tamanho').textContent = tituloTam + 'px';
+  document.getElementById('val-slogan-tamanho').textContent = sloganTam + 'px';
+  document.getElementById('val-status-tamanho').textContent = statusTam + 'px';
+
+  const sombraContorno = '0 0 6px rgba(0,0,0,.9), 0 0 12px rgba(0,0,0,.7), 1px 1px 2px rgba(0,0,0,1)';
+
+  if(nomeEl) {
+    nomeEl.style.fontFamily = `'${fonte}', serif`;
+    nomeEl.style.color = cor;
+    nomeEl.style.fontSize = tituloTam + 'px';
+    nomeEl.style.textShadow = tituloCont ? sombraContorno : 'none';
+    nomeEl.innerHTML = (config.nome || 'Meu Lugar').split(' ').map((w,i)=> i===0 ? w : `<span style="color:${corDest}">${w}</span>`).join(' ');
+  }
+  if(sloganEl) {
+    sloganEl.textContent = config.slogan || 'Lanches, bebidas & boas pedidas';
+    sloganEl.style.fontSize = sloganTam + 'px';
+    sloganEl.style.color = sloganCor;
+    sloganEl.style.textShadow = sloganCont ? sombraContorno : 'none';
+  }
+  if(statusEl) {
+    statusEl.style.fontSize = statusTam + 'px';
+    statusEl.style.textShadow = statusCont ? sombraContorno : 'none';
+  }
+
+  bg.innerHTML = '';
+
+  // monta lista de imagens (modo único ou slide)
+  let urls = [];
+  if(modo === 'slide') {
+    const texto = document.getElementById('cfg-hero-slides').value.trim();
+    urls = texto.split('\n').map(s => s.trim()).filter(Boolean);
+  } else {
+    const url = document.getElementById('cfg-hero-video').value.trim();
+    if(url) urls = [url];
+  }
+
+  if(!urls.length) { overlay.style.display = 'none'; return; }
+
+  overlay.style.display = 'block';
+  overlay.style.background = `linear-gradient(to bottom, rgba(15,13,10,${escuro}) 0%, rgba(15,13,10,${escuro*0.6}) 50%, rgba(15,13,10,${escuro*1.4 > 1 ? 1 : escuro*1.4}) 100%)`;
+
+  const transformStyle = `transform:scale(${zoom});object-position:${posX}% ${posY}%;`;
+
+  // no preview do admin só mostra a primeira imagem (estática), sem animar o slide
+  const primeiraUrl = urls[0];
+  const ytId = getYouTubeId(primeiraUrl);
+  const baseStyle = `position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:${opacidade};${transformStyle}`;
+
+  if(ytId) {
+    bg.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0" allow="autoplay" style="position:absolute;top:50%;left:50%;width:100%;height:100%;min-width:177.78%;min-height:100%;transform:translate(-50%,-50%) scale(${zoom});opacity:${opacidade};border:none;pointer-events:none;"></iframe>`;
+  } else if(isVideoFile(primeiraUrl)) {
+    const v = document.createElement('video');
+    v.src = primeiraUrl; v.autoplay = true; v.muted = true; v.loop = true; v.playsInline = true;
+    v.style.cssText = baseStyle;
+    bg.appendChild(v);
+  } else {
+    const img = document.createElement('img');
+    img.src = primeiraUrl;
+    img.style.cssText = baseStyle;
+    img.onerror = () => { bg.innerHTML = ''; overlay.style.display = 'none'; };
+    bg.appendChild(img);
+  }
+}
+
+function salvarHeroBg() {
+  config.heroModo          = document.getElementById('cfg-hero-modo').value;
+  config.heroVideo         = document.getElementById('cfg-hero-video').value.trim();
+  config.heroSlides        = document.getElementById('cfg-hero-slides').value.trim().split('\n').map(s=>s.trim()).filter(Boolean);
+  config.heroSlideTempo    = parseInt(document.getElementById('cfg-hero-slide-tempo').value) || 5;
+  config.heroOpacity       = parseInt(document.getElementById('cfg-hero-opacity').value);
+  config.heroEscuro        = parseInt(document.getElementById('cfg-hero-escuro').value);
+  config.heroZoom          = parseInt(document.getElementById('cfg-hero-zoom').value);
+  config.heroPosX          = parseInt(document.getElementById('cfg-hero-pos-x').value);
+  config.heroPosY          = parseInt(document.getElementById('cfg-hero-pos-y').value);
+
+  config.tituloFonte       = document.getElementById('cfg-titulo-fonte').value;
+  config.tituloCor         = document.getElementById('cfg-titulo-cor').value;
+  config.tituloCorDestaque = document.getElementById('cfg-titulo-cor-destaque').value;
+  config.tituloTamanho     = parseInt(document.getElementById('cfg-titulo-tamanho').value);
+  config.tituloContorno    = document.getElementById('cfg-titulo-contorno').checked;
+
+  config.sloganTamanho     = parseInt(document.getElementById('cfg-slogan-tamanho').value);
+  config.sloganCor         = document.getElementById('cfg-slogan-cor').value;
+  config.sloganContorno    = document.getElementById('cfg-slogan-contorno').checked;
+
+  config.statusTamanho     = parseInt(document.getElementById('cfg-status-tamanho').value);
+  config.statusContorno    = document.getElementById('cfg-status-contorno').checked;
+
+  cloudSave();
+  applyConfig();
+  alert('✅ Fundo e visual do cabeçalho salvos!');
+}
+
+// ─────────────────────────────────────────────────────────
+// FUNDO PADRÃO DOS PRODUTOS — PREVIEW AO VIVO
+// ─────────────────────────────────────────────────────────
+function syncImgPadraoPreview() {
+  const url = document.getElementById('cfg-img-padrao').value.trim();
+  const opEl = document.getElementById('cfg-img-padrao-opacity');
+  const valEl = document.getElementById('val-img-padrao-opacity');
+  const opacity = (opEl ? parseInt(opEl.value) : 50) / 100;
+  if(valEl) valEl.textContent = Math.round(opacity*100) + '%';
+
+  const media = document.getElementById('imgPadraoPreviewMedia');
+  media.querySelectorAll('img').forEach(el => el.remove());
+  if(!url) return;
+  const img = document.createElement('img');
+  img.src = url;
+  img.style.cssText = `position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:${opacity};z-index:0;`;
+  img.onerror = () => img.remove();
+  media.insertBefore(img, media.firstChild);
+}
+
+function salvarImgPadrao() {
+  config.imagemPadraoProduto = document.getElementById('cfg-img-padrao').value.trim();
+  config.imagemPadraoOpacity = parseInt(document.getElementById('cfg-img-padrao-opacity').value) || 50;
+  cloudSave();
+  renderCards();
+  alert('✅ Fundo padrão dos produtos salvo!');
 }
 
 function addItem() {
