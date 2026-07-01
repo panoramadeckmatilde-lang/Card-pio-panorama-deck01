@@ -244,9 +244,10 @@
   }
   .card-media iframe {
     position: absolute;
-    top: 0; left: 0;
+    inset: 0;
     width: 100%; height: 100%;
     border: none;
+    z-index: 1;
     pointer-events: none;
   }
   /* badge play no card com YouTube */
@@ -362,6 +363,10 @@
     font-size: 72px;
     position: relative;
     overflow: hidden;
+    transition: height .3s;
+  }
+  .modal-media.has-video {
+    height: 280px;
   }
   #modalEmoji {
     position: relative;
@@ -2197,13 +2202,13 @@ function exportarDados() {
   if(!items.length) {
     if(!confirm('⚠️ Atenção: o cardápio está com 0 itens carregados agora. Exportar mesmo assim vai gerar um backup vazio. Continuar?')) return;
   }
-  const dados = { items, config };
+  const dados = { items, config, cats: CATS };
   const blob = new Blob([JSON.stringify(dados, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'cardapio-backup.json';
   a.click();
-  alert(`📤 Backup exportado com ${items.length} item(ns).`);
+  alert(`📤 Backup exportado com ${items.length} item(ns) e ${Object.keys(CATS).length} categoria(s).`);
 }
 
 function importarDados(file) {
@@ -2221,6 +2226,7 @@ function importarDados(file) {
 
       if(dados.items)  items  = dados.items;
       if(dados.config) config = {...DEFAULT_CONFIG, ...dados.config};
+      if(dados.cats && Object.keys(dados.cats).length) CATS = dados.cats;
       nextId = Math.max(...items.map(i=>i.id), 0) + 1;
 
       const ok = await cloudSave();
@@ -2229,7 +2235,7 @@ function importarDados(file) {
       if(ok) {
         alert(`✅ ${qtdNovos} item(ns) importado(s) e salvos na nuvem com sucesso!`);
       } else {
-        alert('⚠️ Os itens foram carregados na tela, mas houve um erro ao salvar na nuvem. Verifique sua conexão e tente "Salvar configurações" de novo, ou veja o status no topo do painel.');
+        alert('⚠️ Os itens foram carregados na tela, mas houve um erro ao salvar na nuvem. Verifique sua conexão e tente de novo.');
       }
     } catch(err) {
       console.error(err);
@@ -2514,9 +2520,19 @@ function makeCard(item) {
   // ── Mídia do produto (foto/vídeo): z-index 1, só se tiver ──
   let mediaHTML = '';
   if(ytId) {
+    // thumbnail do YouTube (muito mais confiável que iframe com autoplay)
+    // ao clicar no card, o modal abre com o vídeo real
     mediaHTML = `
-      <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1" allow="autoplay" frameborder="0" style="position:absolute;inset:0;width:100%;height:100%;border:none;z-index:1;"></iframe>
-      <div class="card-yt-badge" style="z-index:2;">▶ YouTube</div>`;
+      <img 
+        src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" 
+        alt="${item.nome}"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;"
+        onerror="this.src='https://img.youtube.com/vi/${ytId}/0.jpg'">
+      <div style="position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+        <div style="width:48px;height:48px;background:rgba(255,0,0,.85);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <span style="color:#fff;font-size:18px;margin-left:4px;">▶</span>
+        </div>
+      </div>`;
   } else if(isVid) {
     mediaHTML = `<video src="${item.media}" muted loop autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;"></video>`;
   } else if(hasMedia) {
@@ -2758,6 +2774,7 @@ function openModal(item) {
 
   const media = document.getElementById('modalMedia');
   media.querySelectorAll('img,video,iframe').forEach(el=>el.remove());
+  media.classList.remove('has-video');
 
   // fundo padrão SEMPRE atrás (z-index 0)
   if(config.imagemPadraoProduto) {
@@ -2775,15 +2792,24 @@ function openModal(item) {
 
     if(ytId) {
       const ifr = document.createElement('iframe');
-      ifr.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&loop=1&playlist=${ytId}&controls=1&rel=0`;
-      ifr.allow = 'autoplay; fullscreen';
+      // sem loop, sem autoplay forçado - deixa o usuário dar play
+      // origin ajuda a passar pela política de segurança do YouTube
+      const origin = encodeURIComponent(window.location.origin || 'https://panoramadeckmatilde-lang.github.io');
+      ifr.src = `https://www.youtube.com/embed/${ytId}?controls=1&rel=0&modestbranding=1&origin=${origin}`;
+      ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      ifr.allowFullscreen = true;
       ifr.style.cssText = s + 'border:none;';
       media.appendChild(ifr);
+      media.classList.add('has-video');
+      // esconde o emoji quando tem vídeo
+      modalEmoji.style.display = 'none';
     } else if(isVid) {
       const v = document.createElement('video');
-      v.src = item.media; v.controls = true; v.autoplay = true; v.loop = true; v.playsInline = true;
+      v.src = item.media; v.controls = true; v.playsInline = true;
       v.style.cssText = s + 'object-fit:cover;';
       media.appendChild(v);
+      media.classList.add('has-video');
+      modalEmoji.style.display = 'none';
     } else {
       const img = document.createElement('img');
       img.src = item.media;
