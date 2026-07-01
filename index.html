@@ -1691,7 +1691,7 @@
             <div class="form-group" style="margin-top:10px;">
               <label>📏 Tamanho da fonte</label>
               <div class="img-ctrl-row">
-                <input type="range" id="cfg-titulo-tamanho" min="24" max="90" value="56" step="1" oninput="syncHeroPreview()">
+                <input type="range" id="cfg-titulo-tamanho" min="24" max="200" value="56" step="1" oninput="syncHeroPreview()">
                 <span class="img-ctrl-val" id="val-titulo-tamanho">56px</span>
               </div>
             </div>
@@ -2276,7 +2276,7 @@ function applyConfig() {
   document.title = config.nome + ' — Cardápio';
   document.getElementById('nome-estabelecimento').innerHTML =
     config.nome.split(' ').map((w,i)=> i===0 ? w : `<span>${w}</span>`).join(' ');
-  document.getElementById('slogan-estabelecimento').textContent = config.slogan;
+  document.getElementById('slogan-estabelecimento').textContent = config.slogan ?? '';
   document.getElementById('footer-info').textContent = config.footer;
   const wppNum = (config.wpp||'').replace(/\D/g,'');
   document.getElementById('wpp-footer').href = `https://wa.me/${wppNum}`;
@@ -2291,7 +2291,7 @@ function applyConfig() {
   root.setProperty('--titulo-cor', config.tituloCor || '#f0ead8');
   root.setProperty('--titulo-cor-destaque', config.tituloCorDestaque || '#e8a020');
   const tituloTam = config.tituloTamanho || 56;
-  root.setProperty('--titulo-tamanho', `clamp(28px, ${tituloTam/16}vw, ${tituloTam}px)`);
+  root.setProperty('--titulo-tamanho', `${tituloTam}px`);
   root.setProperty('--titulo-contorno', config.tituloContorno ? '0 0 6px rgba(0,0,0,.9), 0 0 12px rgba(0,0,0,.7), 1px 1px 2px rgba(0,0,0,1)' : 'none');
 
   // Slogan: tamanho, cor, contorno
@@ -3187,10 +3187,16 @@ function closeAdmin() {
 // ADMIN — AÇÕES
 // ─────────────────────────────────────────────────────────
 function salvarConfig() {
-  config.nome      = document.getElementById('cfg-nome').value   || config.nome;
-  config.slogan    = document.getElementById('cfg-slogan').value || config.slogan;
-  config.wpp       = document.getElementById('cfg-wpp').value    || config.wpp;
-  config.footer    = document.getElementById('cfg-footer').value || config.footer;
+  // nome e wpp não podem ficar vazios — mantém o valor atual se apagar
+  const novoNome = document.getElementById('cfg-nome').value.trim();
+  const novoWpp  = document.getElementById('cfg-wpp').value.trim();
+  config.nome   = novoNome  || config.nome;
+  config.wpp    = novoWpp   || config.wpp;
+
+  // slogan e footer PODEM ser vazios — o usuário pode querer apagar
+  config.slogan = document.getElementById('cfg-slogan').value;
+  config.footer = document.getElementById('cfg-footer').value;
+
   cloudSave();
   applyConfig();
   alert('✅ Configurações salvas!');
@@ -3269,7 +3275,8 @@ function syncHeroPreview() {
     nomeEl.innerHTML = (config.nome || 'Meu Lugar').split(' ').map((w,i)=> i===0 ? w : `<span style="color:${corDest}">${w}</span>`).join(' ');
   }
   if(sloganEl) {
-    sloganEl.textContent = config.slogan || 'Lanches, bebidas & boas pedidas';
+    sloganEl.textContent = config.slogan ?? '';
+    sloganEl.style.display = config.slogan ? '' : 'none';
     sloganEl.style.fontSize = sloganTam + 'px';
     sloganEl.style.color = sloganCor;
     sloganEl.style.textShadow = sloganCont ? sombraContorno : 'none';
