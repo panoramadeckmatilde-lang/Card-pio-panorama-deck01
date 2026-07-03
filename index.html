@@ -1924,6 +1924,23 @@
     <!-- LISTA DE ITENS -->
     <div class="admin-section">
       <h3>📋 Itens do cardápio</h3>
+
+      <!-- Busca e filtro -->
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="position:relative;flex:2;min-width:160px;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;pointer-events:none;">🔍</span>
+          <input type="text" id="adminSearch" placeholder="Buscar produto..."
+            style="width:100%;padding:10px 12px 10px 38px;background:var(--surface);border:1px solid var(--border);border-radius:50px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;"
+            oninput="renderAdminList()">
+        </div>
+        <select id="adminFiltroCategoria"
+          style="flex:1;min-width:130px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:50px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;"
+          onchange="renderAdminList()">
+          <option value="">Todas as categorias</option>
+        </select>
+      </div>
+
+      <div id="adminItemCount" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
       <div class="item-list" id="adminItemList"></div>
     </div>
 
@@ -2740,15 +2757,57 @@ function addCategoria() {
 
 function renderAdminList() {
   const el = document.getElementById('adminItemList');
+  const countEl = document.getElementById('adminItemCount');
   el.innerHTML = '';
-  if(!items.length) { el.innerHTML='<p style="color:var(--muted);font-size:14px;">Nenhum item ainda.</p>'; return; }
-  items.forEach(item => {
+
+  // popular select de categoria do filtro
+  const selCat = document.getElementById('adminFiltroCategoria');
+  if(selCat) {
+    const valAtual = selCat.value;
+    selCat.innerHTML = '<option value="">Todas as categorias</option>';
+    Object.entries(CATS).forEach(([key, c]) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = `${c.emoji} ${c.label}`;
+      selCat.appendChild(opt);
+    });
+    selCat.value = valAtual;
+  }
+
+  if(!items.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:14px;">Nenhum item ainda.</p>';
+    if(countEl) countEl.textContent = '';
+    return;
+  }
+
+  // filtros
+  const q        = (document.getElementById('adminSearch')?.value || '').toLowerCase().trim();
+  const catFiltro = document.getElementById('adminFiltroCategoria')?.value || '';
+
+  const filtrados = items.filter(item => {
+    const matchBusca = !q || item.nome.toLowerCase().includes(q) || (item.desc||'').toLowerCase().includes(q);
+    const matchCat   = !catFiltro || item.cat === catFiltro;
+    return matchBusca && matchCat;
+  });
+
+  if(countEl) {
+    countEl.textContent = filtrados.length === items.length
+      ? `${items.length} produto(s)`
+      : `${filtrados.length} de ${items.length} produto(s)`;
+  }
+
+  if(!filtrados.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:14px;">Nenhum produto encontrado com esse filtro.</p>';
+    return;
+  }
+
+  filtrados.forEach(item => {
     const row = document.createElement('div');
     row.className = 'item-row';
     row.innerHTML = `
       <div class="item-row-info">
         <div class="item-row-name">${item.emoji||''} ${item.nome}</div>
-        <div class="item-row-cat">${CATS[item.cat]?.label||item.cat}</div>
+        <div class="item-row-cat">${CATS[item.cat]?.label||item.cat} ${item.disponivel ? '' : '· <span style="color:var(--accent2)">Inativo</span>'}</div>
       </div>
       <div class="item-row-price">R$ ${item.preco.toFixed(2).replace('.',',')}</div>
       <div class="item-row-actions">
