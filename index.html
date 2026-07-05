@@ -3326,7 +3326,9 @@ function confirmarNomeCliente() {
   localStorage.setItem('cdp_nome_cliente', nomeCliente);
 
   const wpp = (config.wpp||'').replace(/\D/g,'');
-  const igLinha = config.instagram ? `\n📸 *Instagram:* @${config.instagram}` : '';
+  const igLinha = config.instagram
+    ? `\n📸 *Instagram:* @${config.instagram}\n🔗 https://instagram.com/${config.instagram}`
+    : '';
   const separador = '━━━━━━━━━━━━━━━';
   const nomeEstab = config.nome || 'Cardápio';
 
