@@ -1031,7 +1031,7 @@
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 32px 28px;
-    max-width: 360px;
+    max-width: 420px;
     width: 100%;
     animation: slideUp .25s ease;
   }
@@ -1519,8 +1519,8 @@
 <!-- MODAL NOME CLIENTE -->
 <div class="nome-overlay" id="nomeOverlay">
   <div class="nome-box">
-    <div id="nomeBoxLogo" style="display:none;margin-bottom:12px;">
-      <img id="nomeBoxLogoImg" src="" alt="Logo" style="max-height:60px;max-width:160px;object-fit:contain;border-radius:8px;">
+    <div id="nomeBoxLogo" style="display:none;margin-bottom:16px;text-align:center;">
+      <img id="nomeBoxLogoImg" src="" alt="Logo" style="max-height:100px;max-width:220px;object-fit:contain;border-radius:12px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));">
     </div>
     <div class="icon">👋</div>
     <h3>Antes de continuar...</h3>
@@ -3326,26 +3326,19 @@ function confirmarNomeCliente() {
   localStorage.setItem('cdp_nome_cliente', nomeCliente);
 
   const wpp = (config.wpp||'').replace(/\D/g,'');
-
-  // linha do Instagram (se configurado)
-  const igLinha = config.instagram
-    ? `\n📸 Instagram: https://instagram.com/${config.instagram}`
-    : '';
-
-  // linha da logo (se configurada — aparece como link clicável no WhatsApp)
-  const logoLinha = config.logoUrl
-    ? `\n🖼️ ${config.logoUrl}`
-    : '';
+  const igLinha = config.instagram ? `\n📸 *Instagram:* @${config.instagram}` : '';
+  const separador = '━━━━━━━━━━━━━━━';
+  const nomeEstab = config.nome || 'Cardápio';
 
   let texto;
   if(pedidoPendente?.tipo === 'carrinho') {
-    const linhas = carrinho.map(c => `• ${c.qtd}x ${c.nome} — R$ ${(c.preco * c.qtd).toFixed(2).replace('.',',')}`).join('\n');
+    const linhas = carrinho.map(c => `  • ${c.qtd}x ${c.nome} — *R$ ${(c.preco * c.qtd).toFixed(2).replace('.',',')}*`).join('\n');
     const total = getTotalCarrinho().toFixed(2).replace('.',',');
-    texto = `${logoLinha ? logoLinha + '\n' : ''}*${config.nome || 'Cardápio'}*\n\nOlá! Meu nome é *${nomeCliente}*.\n\n🛒 *Meu pedido:*\n${linhas}\n\n*Total: R$ ${total}*${igLinha}`;
+    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\n🛒 *Pedido:*\n${linhas}\n\n${separador}\n💰 *Total: R$ ${total}*${igLinha}\n${separador}`;
   } else if(pedidoPendente?.tipo === 'item') {
-    texto = `${logoLinha ? logoLinha + '\n' : ''}*${config.nome || 'Cardápio'}*\n\nOlá! Meu nome é *${nomeCliente}*.\nQuero pedir: *${pedidoPendente.nome}* — R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}${igLinha}`;
+    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\n🛒 *Pedido:*\n  • 1x ${pedidoPendente.nome} — *R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*\n\n${separador}\n💰 *Total: R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*${igLinha}\n${separador}`;
   } else {
-    texto = `${logoLinha ? logoLinha + '\n' : ''}*${config.nome || 'Cardápio'}*\n\nOlá! Meu nome é *${nomeCliente}*. Gostaria de fazer um pedido.${igLinha}`;
+    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\nGostaria de fazer um pedido.${igLinha}\n${separador}`;
   }
 
   const msg = encodeURIComponent(texto);
