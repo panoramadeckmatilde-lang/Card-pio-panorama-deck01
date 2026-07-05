@@ -3327,7 +3327,7 @@ function confirmarNomeCliente() {
 
   const wpp = (config.wpp||'').replace(/\D/g,'');
   const igLinha = config.instagram
-    ? `\n📸 *Instagram:* @${config.instagram}\n🔗 https://instagram.com/${config.instagram}`
+    ? `\n\n📸 *Instagram:* @${config.instagram}\n🔗 https://instagram.com/${config.instagram}\n`
     : '';
   const separador = '━━━━━━━━━━━━━━━';
   const nomeEstab = config.nome || 'Cardápio';
@@ -3336,11 +3336,11 @@ function confirmarNomeCliente() {
   if(pedidoPendente?.tipo === 'carrinho') {
     const linhas = carrinho.map(c => `  • ${c.qtd}x ${c.nome} — *R$ ${(c.preco * c.qtd).toFixed(2).replace('.',',')}*`).join('\n');
     const total = getTotalCarrinho().toFixed(2).replace('.',',');
-    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\n🛒 *Pedido:*\n${linhas}\n\n${separador}\n💰 *Total: R$ ${total}*${igLinha}\n${separador}`;
+    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\n🛒 *Pedido:*\n${linhas}\n\n${separador}\n💰 *Total: R$ ${total}*${igLinha}${separador}`;
   } else if(pedidoPendente?.tipo === 'item') {
-    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\n🛒 *Pedido:*\n  • 1x ${pedidoPendente.nome} — *R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*\n\n${separador}\n💰 *Total: R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*${igLinha}\n${separador}`;
+    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\n🛒 *Pedido:*\n  • 1x ${pedidoPendente.nome} — *R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*\n\n${separador}\n💰 *Total: R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*${igLinha}${separador}`;
   } else {
-    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\nGostaria de fazer um pedido.${igLinha}\n${separador}`;
+    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\nGostaria de fazer um pedido.${igLinha}${separador}`;
   }
 
   const msg = encodeURIComponent(texto);
