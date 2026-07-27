@@ -1556,7 +1556,7 @@
     <h3>Antes de continuar...</h3>
     <p>Para identificar seu pedido no WhatsApp, nos diga seu nome:</p>
     <input type="text" id="nomeClienteInput" placeholder="Seu nome" onkeydown="if(event.key==='Enter'){document.getElementById('mesaClienteInput')?document.getElementById('mesaClienteInput').focus():confirmarNomeCliente()}">
-    <input type="text" id="mesaClienteInput" placeholder="Número da mesa (opcional)" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmarNomeCliente()" style="display:none;">
+    <input type="text" id="mesaClienteInput" placeholder="Número da mesa" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmarNomeCliente()" style="display:none;">
     <div id="nomeBoxInstagram" style="display:none;margin-bottom:12px;padding:10px;background:linear-gradient(135deg,rgba(131,58,180,.15),rgba(253,29,29,.1),rgba(252,176,69,.1));border-radius:10px;border:1px solid rgba(131,58,180,.3);">
       <a id="nomeBoxInstagramLink" href="#" target="_blank" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;justify-content:center;">
         <span style="font-size:20px;">📸</span>
@@ -1656,7 +1656,7 @@
         </div>
         <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;">
           <input type="checkbox" id="cfg-pedir-mesa" style="width:18px;height:18px;accent-color:var(--accent)">
-          <label for="cfg-pedir-mesa" style="cursor:pointer;font-size:14px;">🪑 Pedir número da mesa antes de fechar o pedido</label>
+          <label for="cfg-pedir-mesa" style="cursor:pointer;font-size:14px;">🪑 Exigir número da mesa antes de fechar o pedido (obrigatório)</label>
         </div>
       </div>
       <button class="btn-add-item" onclick="salvarConfig()" style="margin-top:14px;">💾 Salvar configurações</button>
@@ -3375,6 +3375,11 @@ function confirmarNomeCliente() {
   if(!nomeCliente) { alert('Por favor, digite seu nome para continuar.'); return; }
 
   const mesaCliente = config.pedirMesa ? document.getElementById('mesaClienteInput').value.trim() : '';
+  if(config.pedirMesa && !mesaCliente) {
+    alert('Por favor, informe o número da mesa para continuar.');
+    document.getElementById('mesaClienteInput').focus();
+    return;
+  }
 
   localStorage.setItem('cdp_nome_cliente', nomeCliente);
   if(config.pedirMesa) localStorage.setItem('cdp_mesa_cliente', mesaCliente);
