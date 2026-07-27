@@ -1318,6 +1318,36 @@
 </head>
 <body>
 
+<!-- LOADING SCREEN -->
+<div id="loadingScreen" style="
+  position:fixed;inset:0;
+  background:var(--bg);
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  transition:opacity .4s ease;
+">
+  <div id="loadingLogo" style="font-size:48px;">🍽️</div>
+  <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--accent);font-weight:700;" id="loadingNome">Carregando...</div>
+  <div style="display:flex;gap:8px;margin-top:8px;">
+    <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);animation:loadDot 1.2s .0s infinite ease-in-out both;display:block;"></span>
+    <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);animation:loadDot 1.2s .2s infinite ease-in-out both;display:block;"></span>
+    <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);animation:loadDot 1.2s .4s infinite ease-in-out both;display:block;"></span>
+  </div>
+  <p id="loadingMsg" style="font-size:13px;color:var(--muted);margin-top:4px;">Buscando cardápio atualizado...</p>
+  <button id="loadingRetryBtn" onclick="tentarNovamente()" style="display:none;padding:12px 28px;background:var(--accent);border:none;border-radius:50px;color:#0f0d0a;font-size:14px;font-weight:700;cursor:pointer;">🔄 Tentar novamente</button>
+</div>
+
+<style>
+@keyframes loadDot {
+  0%,80%,100% { transform:scale(0); opacity:.3; }
+  40%          { transform:scale(1); opacity:1; }
+}
+</style>
+
 <!-- HERO -->
 <header class="hero">
   <div id="heroBg"></div>
@@ -1525,7 +1555,8 @@
     <div class="icon">👋</div>
     <h3>Antes de continuar...</h3>
     <p>Para identificar seu pedido no WhatsApp, nos diga seu nome:</p>
-    <input type="text" id="nomeClienteInput" placeholder="Seu nome" onkeydown="if(event.key==='Enter')confirmarNomeCliente()">
+    <input type="text" id="nomeClienteInput" placeholder="Seu nome" onkeydown="if(event.key==='Enter'){document.getElementById('mesaClienteInput')?document.getElementById('mesaClienteInput').focus():confirmarNomeCliente()}">
+    <input type="text" id="mesaClienteInput" placeholder="Número da mesa (opcional)" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmarNomeCliente()" style="display:none;">
     <div id="nomeBoxInstagram" style="display:none;margin-bottom:12px;padding:10px;background:linear-gradient(135deg,rgba(131,58,180,.15),rgba(253,29,29,.1),rgba(252,176,69,.1));border-radius:10px;border:1px solid rgba(131,58,180,.3);">
       <a id="nomeBoxInstagramLink" href="#" target="_blank" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;justify-content:center;">
         <span style="font-size:20px;">📸</span>
@@ -1622,6 +1653,10 @@
         <div class="form-group">
           <label>Texto do rodapé</label>
           <input type="text" id="cfg-footer" placeholder="Ex: Seg–Dom 17h às 23h">
+        </div>
+        <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;">
+          <input type="checkbox" id="cfg-pedir-mesa" style="width:18px;height:18px;accent-color:var(--accent)">
+          <label for="cfg-pedir-mesa" style="cursor:pointer;font-size:14px;">🪑 Pedir número da mesa antes de fechar o pedido</label>
         </div>
       </div>
       <button class="btn-add-item" onclick="salvarConfig()" style="margin-top:14px;">💾 Salvar configurações</button>
@@ -2252,6 +2287,7 @@ const DEFAULT_CONFIG = {
   slogan: 'Lanches, bebidas & boas pedidas',
   wpp: '5547999998888',
   instagram: '',
+  pedirMesa: false,
   logoUrl: '',
   footer: 'Seg–Dom a partir das 17h',
   senha: '1234',
@@ -2332,16 +2368,21 @@ async function cloudLoad() {
   if(!creds?.binId || !creds?.apiKey) return false;
   try {
     setStatus('⏳ Carregando da nuvem...', 'info');
-    // cache-busting: evita 304/cache do navegador trazendo dados antigos
+
+    // timeout de 8 segundos
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
     const r = await fetch(`https://api.jsonbin.io/v3/b/${creds.binId}/latest?t=${Date.now()}`, {
       headers: { 'X-Master-Key': creds.apiKey },
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: controller.signal
     });
-    if(!r.ok) throw new Error('Erro ' + r.status);
+    clearTimeout(timeout);
+
+    if(!r.ok) throw new Error('HTTP ' + r.status);
     const data = (await r.json()).record;
-    if(Array.isArray(data.items) && data.items.length) {
-      items = data.items;
-    }
+    if(Array.isArray(data.items) && data.items.length) items = data.items;
     if(data.config) config = {...DEFAULT_CONFIG, ...data.config};
     if(data.cats && Object.keys(data.cats).length) CATS = data.cats;
     nextId = Math.max(...items.map(i=>i.id), 0) + 1;
@@ -3288,6 +3329,16 @@ function openNomeModal() {
   const salvo = localStorage.getItem('cdp_nome_cliente') || '';
   document.getElementById('nomeClienteInput').value = salvo;
 
+  // campo de mesa (opcional, controlado pelo admin)
+  const mesaInput = document.getElementById('mesaClienteInput');
+  if(config.pedirMesa) {
+    mesaInput.style.display = '';
+    mesaInput.value = localStorage.getItem('cdp_mesa_cliente') || '';
+  } else {
+    mesaInput.style.display = 'none';
+    mesaInput.value = '';
+  }
+
   // mostrar logo se configurada
   const logoBox = document.getElementById('nomeBoxLogo');
   const logoImg = document.getElementById('nomeBoxLogoImg');
@@ -3323,7 +3374,10 @@ function confirmarNomeCliente() {
   const nomeCliente = document.getElementById('nomeClienteInput').value.trim();
   if(!nomeCliente) { alert('Por favor, digite seu nome para continuar.'); return; }
 
+  const mesaCliente = config.pedirMesa ? document.getElementById('mesaClienteInput').value.trim() : '';
+
   localStorage.setItem('cdp_nome_cliente', nomeCliente);
+  if(config.pedirMesa) localStorage.setItem('cdp_mesa_cliente', mesaCliente);
 
   const wpp = (config.wpp||'').replace(/\D/g,'');
   const igLinha = config.instagram
@@ -3331,16 +3385,17 @@ function confirmarNomeCliente() {
     : '';
   const separador = '━━━━━━━━━━━━━━━';
   const nomeEstab = config.nome || 'Cardápio';
+  const mesaLinha = mesaCliente ? `\n🪑 *Mesa:* ${mesaCliente}` : '';
 
   let texto;
   if(pedidoPendente?.tipo === 'carrinho') {
     const linhas = carrinho.map(c => `  • ${c.qtd}x ${c.nome} — *R$ ${(c.preco * c.qtd).toFixed(2).replace('.',',')}*`).join('\n');
     const total = getTotalCarrinho().toFixed(2).replace('.',',');
-    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\n🛒 *Pedido:*\n${linhas}\n\n${separador}\n💰 *Total: R$ ${total}*${igLinha}${separador}`;
+    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}${mesaLinha}\n\n🛒 *Pedido:*\n${linhas}\n\n${separador}\n💰 *Total: R$ ${total}*${igLinha}${separador}`;
   } else if(pedidoPendente?.tipo === 'item') {
-    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\n🛒 *Pedido:*\n  • 1x ${pedidoPendente.nome} — *R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*\n\n${separador}\n💰 *Total: R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*${igLinha}${separador}`;
+    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}${mesaLinha}\n\n🛒 *Pedido:*\n  • 1x ${pedidoPendente.nome} — *R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*\n\n${separador}\n💰 *Total: R$ ${pedidoPendente.preco.toFixed(2).replace('.',',')}*${igLinha}${separador}`;
   } else {
-    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}\n\nGostaria de fazer um pedido.${igLinha}${separador}`;
+    texto = `🏪 *${nomeEstab}*\n${separador}\n\n👤 *Cliente:* ${nomeCliente}${mesaLinha}\n\nGostaria de fazer um pedido.${igLinha}${separador}`;
   }
 
   const msg = encodeURIComponent(texto);
@@ -3427,6 +3482,7 @@ async function openAdminPanel() {
   document.getElementById('cfg-wpp').value        = config.wpp||'';
   document.getElementById('cfg-instagram').value  = config.instagram||'';
   document.getElementById('cfg-logo-url').value   = config.logoUrl||'';
+  document.getElementById('cfg-pedir-mesa').checked = !!config.pedirMesa;
   document.getElementById('cfg-footer').value     = config.footer;
   document.getElementById('cfg-fonte-geral').value = config.fonteGeral || 'Inter';
 
@@ -3496,6 +3552,7 @@ function salvarConfig() {
   config.logoUrl   = document.getElementById('cfg-logo-url').value.trim();
   config.slogan    = document.getElementById('cfg-slogan').value;
   config.footer    = document.getElementById('cfg-footer').value;
+  config.pedirMesa = document.getElementById('cfg-pedir-mesa').checked;
   cloudSave();
   applyConfig();
   alert('✅ Configurações salvas!');
@@ -3962,20 +4019,79 @@ function salvarEdicao() {
 document.getElementById('editOverlay').onclick = e => { if(e.target===e.currentTarget) closeEditModal(); };
 
 // ─────────────────────────────────────────────────────────
+// LOADING SCREEN
+// ─────────────────────────────────────────────────────────
+function setLoadingMsg(msg) {
+  const el = document.getElementById('loadingMsg');
+  if(el) el.textContent = msg;
+}
+
+function esconderLoading() {
+  const el = document.getElementById('loadingScreen');
+  if(!el) return;
+  el.style.opacity = '0';
+  setTimeout(() => { el.style.display = 'none'; }, 400);
+}
+
+function mostrarErroLoading() {
+  setLoadingMsg('⚠️ Não foi possível carregar o cardápio. Verifique sua conexão.');
+  const btn = document.getElementById('loadingRetryBtn');
+  if(btn) btn.style.display = 'block';
+  const dots = document.querySelectorAll('#loadingScreen span');
+  dots.forEach(d => d.style.display = 'none');
+}
+
+async function tentarNovamente() {
+  const btn = document.getElementById('loadingRetryBtn');
+  if(btn) btn.style.display = 'none';
+  const dots = document.querySelectorAll('#loadingScreen span');
+  dots.forEach(d => d.style.display = 'block');
+  setLoadingMsg('Tentando novamente...');
+  await iniciarApp();
+}
+
+async function iniciarApp() {
+  const creds = getCreds();
+
+  if(!creds?.binId || !creds?.apiKey) {
+    // sem nuvem configurada — mostra aviso mas abre o cardápio
+    setLoadingMsg('⚠️ Nuvem não configurada. Abrindo cardápio local...');
+    localLoad();
+    setStatus('☁️ Sem nuvem configurada', 'info');
+    setTimeout(() => {
+      applyConfig(); renderCats(); renderCards();
+      esconderLoading();
+    }, 1000);
+    return;
+  }
+
+  setLoadingMsg('Buscando cardápio atualizado...');
+  const ok = await cloudLoad();
+
+  if(ok) {
+    applyConfig(); renderCats(); renderCards();
+    esconderLoading();
+  } else {
+    // falhou — tenta mais uma vez automaticamente
+    setLoadingMsg('Conexão lenta, tentando novamente...');
+    await new Promise(r => setTimeout(r, 2000));
+    const ok2 = await cloudLoad();
+    if(ok2) {
+      applyConfig(); renderCats(); renderCards();
+      esconderLoading();
+    } else {
+      mostrarErroLoading();
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────
 (async () => {
-  const creds = getCreds();
-  if(creds?.binId && creds?.apiKey) {
-    const ok = await cloudLoad();
-    if(!ok) localLoad(); // fallback
-  } else {
-    localLoad();
-    setStatus('☁️ Sem nuvem configurada', 'info');
-  }
-  applyConfig();
-  renderCats();
-  renderCards();
+  // mostra logo da empresa na tela de loading se já tiver configurada no código
+  // (não depende de nuvem pra isso)
+  await iniciarApp();
 })();
 </script>
 </body>
